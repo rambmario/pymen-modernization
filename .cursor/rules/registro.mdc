@@ -1,0 +1,39 @@
+﻿---
+description: Registro obligatorio de todo el trabajo del proyecto Pymen
+alwaysApply: true
+---
+
+Este proyecto es un portfolio. Todo lo que se haga debe quedar registrado.
+
+Rutas:
+- Legacy (SOLO LECTURA): D:\VBNetAnterior\Pymen (carpeta "Pymen" del workspace).
+- Repo nuevo (todo lo que se genere va aquÃ­): D:\VBNet\pymen-modernization.
+
+Al terminar CADA tarea o sesiÃ³n, antes de responder "listo":
+
+1. docs/worklog.md â€” agregar una entrada al final con:
+   - Fecha y hora
+   - Objetivo de la sesiÃ³n
+   - QuÃ© se hizo (archivos creados o modificados)
+   - Decisiones tomadas y por quÃ©
+   - Problemas encontrados y cÃ³mo se resolvieron
+   - PrÃ³ximo paso
+
+2. docs/ai-usage.md â€” agregar:
+   - El pedido principal que se le hizo a la IA (resumido)
+   - QuÃ© generÃ³ la IA y quÃ© revisÃ³ o corrigiÃ³ el desarrollador
+   - Tiempo estimado ahorrado
+
+3. docs/adr/ â€” si se tomÃ³ una decisiÃ³n de arquitectura (stack, patrÃ³n, librerÃ­a, estructura), crear un ADR con el formato:
+   NNNN-titulo.md con secciones: Contexto, DecisiÃ³n, Alternativas consideradas, Consecuencias.
+
+4. CHANGELOG.md â€” secciÃ³n [Unreleased] con los cambios visibles en formato Keep a Changelog.
+
+Reglas:
+- Nunca modificar, crear ni borrar nada dentro de D:\VBNetAnterior\Pymen: es solo lectura.
+- Nunca copiar al repo nombres reales de clientes, empresas, personas, CUIT/CUIL, direcciones, telÃ©fonos, credenciales, cadenas de conexiÃ³n ni datos de producciÃ³n: reemplazarlos por datos genÃ©ricos (ej. "Empresa A", "Cliente 1").
+- Nunca copiar al repo backups de base de datos (.bak, .mdf, .ldf) ni archivos del legacy.
+- No documentar ni mencionar en ningÃºn archivo (docs, cÃ³digo, commits, README) los mÃ³dulos o flujos del legacy que quedan fuera de alcance: simplemente no se incluyen.
+- Si algo del legacy no se puede interpretar, anotarlo en "Preguntas abiertas" en lugar de inventar.
+- Escribir la documentaciÃ³n en espaÃ±ol y el cÃ³digo, commits y README en inglÃ©s.
+- Un commit por tarea, con mensaje en formato Conventional Commits (feat:, fix:, docs:, refactor:, test:, chore:).
