@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate ephemeral test credentials
+        run: |
+          JWT="$(openssl rand -base64 48 | tr -d '\n')"
+          SQL="Ci$(openssl rand -hex 12)A1!"
+          echo "JWT_SIGNING_KEY=${JWT}" >> "$GITHUB_ENV"
+          echo "MSSQL_SA_PASSWORD=${SQL}" >> "$GITHUB_ENV"
+          {
+            echo "JWT_SIGNING_KEY=${JWT}"
+            echo "MSSQL_SA_PASSWORD=${SQL}"
+            echo "DEMO_PASSWORD_ADMIN=AdminPass123"
+            echo "DEMO_PASSWORD_PLANNER=PlannerPass123"
+            echo "DEMO_PASSWORD_OPERATOR=OperatorPass123"
+          } > .env
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+          cache: true
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release, warnings as errors)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test --configuration Release --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults
+          --logger "trx;LogFileName=tests.trx"
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: TestResults/
+          if-no-files-found: warn
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint (if configured)
+        run: |
+          if node -e "const p=require('./package.json'); process.exit(p.scripts && p.scripts.lint ? 0 : 1)"; then
+            npm run lint
+          else
+            echo "No lint script; skipping."
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Build (production)
+        run: npm run build

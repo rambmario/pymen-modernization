@@ -231,3 +231,23 @@ OK Paso 4 → ADR 0006 trade-off + SPA Angular en `/web` (auth, OT list/detail/c
 ### Tiempo estimado ahorrado
 
 ~6–8 h.
+
+---
+
+## 2026-10-20 — Paginación + CI
+
+### Pedido principal
+
+OK Paso 5 → paginación API/web en commits separados; Paso 6 CI + Dependabot; push y resultado del primer run.
+
+### Qué generó la IA
+
+- Paginación server-side, refactor Angular, workflow CI, Dependabot, ADR 0008, docs.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión del primer run de CI en GitHub.
+
+### Tiempo estimado ahorrado
+
+~3–4 h.

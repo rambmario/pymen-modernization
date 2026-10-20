@@ -1,10 +1,12 @@
 # Pymen Modernization
 
+[![CI](https://github.com/rambmario/pymen-modernization/actions/workflows/ci.yml/badge.svg)](https://github.com/rambmario/pymen-modernization/actions/workflows/ci.yml)
+
 Portfolio project: modernizing **Pymen**, a legacy VB.NET WinForms ERP focused on production management for SMEs (pymes), into a multi-tenant cloud stack.
 
 ## Status
 
-**Phase 1 in progress** — .NET 10 API (Identity + JWT, work orders) and Angular SPA in `/web`.
+**Phase 1 in progress** — .NET 10 API (Identity + JWT, work orders), Angular SPA in `/web`, and GitHub Actions CI.
 
 ## Goals
 

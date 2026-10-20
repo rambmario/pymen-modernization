@@ -69,3 +69,9 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Angular 21 SPA in `/web`: login, work-order list/detail/create, Material UI, role-aware actions, ProblemDetails snackbars (ADR 0007).
 - Dev proxy to the API; CORS for `http://localhost:4200` in Development only.
 - `GET /api/operation-types` for OT create/detail labels.
+- Server-side work-order list pagination/filters (`items`, `page`, `pageSize`, `totalCount`; max pageSize 100).
+- GitHub Actions CI (backend + frontend), Dependabot (NuGet/npm/Actions), CI badge (ADR 0008).
+
+### Changed
+
+- Angular work-order list uses server pagination; subscriptions use `takeUntilDestroyed`; detail binds route `id` via `withComponentInputBinding()`.

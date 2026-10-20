@@ -387,3 +387,28 @@ SPA de OT con auth JWT/roles, Material, tests unitarios; proxy + CORS Dev; ADR 0
 ### Próximo paso
 
 Esperar OK del Paso 5.
+
+---
+
+## 2026-10-20 — Paginación API/web + Paso 6 CI
+
+**Hora (aprox.):** 07:15–07:30 (UTC-3)
+
+### Objetivo
+
+Paginación/filtros server-side de OT, refactor Angular, y CI GitHub Actions + Dependabot.
+
+### Qué se hizo
+
+- `feat(api)`: `GET /api/work-orders` → `{ items, page, pageSize, totalCount }`; filtros `status`/`customerId`; pageSize máx. 100; test integración + unitario Application.
+- `refactor(web)`: lista usa paginación servidor; `takeUntilDestroyed`; `withComponentInputBinding` + `input()` en detalle; tests actualizados.
+- Paso 6: `.github/workflows/ci.yml` (backend + frontend), Dependabot semanal, badge README, ADR 0008. Credenciales JWT/SQL generadas en el job.
+
+### Tests (local)
+
+- .NET: **44 passed, 0 skipped** (26 domain + 7 application + 11 integration).
+- Angular: **11 passed, 0 skipped**.
+
+### Próximo paso
+
+Push a `main`, revisar primer run de CI; esperar OK.
