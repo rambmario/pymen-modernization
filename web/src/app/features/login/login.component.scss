@@ -1,0 +1,23 @@
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--mat-sys-primary) 18%, transparent), transparent 45%),
+    var(--mat-sys-surface);
+}
+
+.login-card {
+  width: min(100%, 420px);
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+button mat-spinner {
+  display: inline-block;
+}

@@ -63,3 +63,9 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Changed
 
 - Application services (`CatalogService`, `WorkOrderService`, `DeliveryNoteService`) own use cases via `IPymenDbContext`; API endpoints only map HTTP ↔ services; added `Pymen.Application.Tests`.
+
+### Added
+
+- Angular 21 SPA in `/web`: login, work-order list/detail/create, Material UI, role-aware actions, ProblemDetails snackbars (ADR 0007).
+- Dev proxy to the API; CORS for `http://localhost:4200` in Development only.
+- `GET /api/operation-types` for OT create/detail labels.

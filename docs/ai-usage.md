@@ -211,3 +211,23 @@ Hardening JWT/authz/rate-limit/seed y mover casos de uso a Application con tests
 ### Tiempo estimado ahorrado
 
 ~2–3 h.
+
+---
+
+## 2026-10-19 — Paso 5 frontend Angular
+
+### Pedido principal
+
+OK Paso 4 → ADR 0006 trade-off + SPA Angular en `/web` (auth, OT list/detail/create, Material, tests, proxy/CORS, ADR 0007).
+
+### Qué generó la IA
+
+- App Angular 21, servicios/guards/interceptor, pantallas OT, CORS + operation-types, docs/tests.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión humana de UX/roles y Node (Angular 21 vs 22 por versión de Node).
+
+### Tiempo estimado ahorrado
+
+~6–8 h.

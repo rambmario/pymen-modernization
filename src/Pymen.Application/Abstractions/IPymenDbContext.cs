@@ -10,6 +10,7 @@ public interface IPymenDbContext
     DbSet<Tenant> Tenants { get; }
     DbSet<Customer> Customers { get; }
     DbSet<Product> Products { get; }
+    DbSet<OperationType> OperationTypes { get; }
     DbSet<WorkOrder> WorkOrders { get; }
     DbSet<DeliveryNote> DeliveryNotes { get; }
 

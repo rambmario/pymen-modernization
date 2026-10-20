@@ -360,3 +360,30 @@ Hardening de auth y mover casos de uso a Application antes del Paso 5.
 ### Próximo paso
 
 Paso 5. Esperar OK.
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 5: frontend Angular
+
+**Hora (aprox.):** 23:07–23:20 (UTC-3)
+
+### Objetivo
+
+SPA de OT con auth JWT/roles, Material, tests unitarios; proxy + CORS Dev; ADR 0007.
+
+### Qué se hizo
+
+- ADR 0006: trade-off Application ↔ EF (`IPymenDbContext` / sin repos genéricos) — commit `docs` previo.
+- `/web`: Angular 21 standalone + signals + Material + lazy routes; login; token memoria/`sessionStorage`; interceptor + guards.
+- Pantallas: listado OT (filtros estado/cliente, paginación), detalle (líneas/ops + acciones por rol), alta OT.
+- Snackbar ProblemDetails 400/409/422; mensajes 403/404; modelos TS a mano (ADR 0007).
+- API: CORS Dev `localhost:4200`; `GET /api/operation-types`.
+
+### Tests
+
+- .NET (Docker): **42 passed, 0 skipped** (26 domain + 6 application + 10 integration).
+- Angular (Vitest): **11 passed, 0 skipped**.
+
+### Próximo paso
+
+Esperar OK del Paso 5.

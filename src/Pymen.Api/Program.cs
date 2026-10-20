@@ -37,6 +37,19 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(
+            "FrontendDev",
+            policy => policy
+                .WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod());
+    });
+}
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -45,6 +58,11 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue("EnableOpenApi
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("FrontendDev");
 }
 
 var seedEnabled = app.Configuration.GetValue("Seed:Enabled", false)
@@ -81,6 +99,7 @@ if (app.Configuration.GetValue("EnableAuthProbe", false))
 app.MapAuthEndpoints();
 app.MapCustomerEndpoints();
 app.MapProductEndpoints();
+app.MapOperationTypeEndpoints();
 app.MapWorkOrderEndpoints();
 app.MapDeliveryNoteEndpoints();
 

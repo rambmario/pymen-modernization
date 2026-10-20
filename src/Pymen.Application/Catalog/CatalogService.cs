@@ -71,6 +71,16 @@ public sealed class CatalogService
         return true;
     }
 
+    public async Task<IReadOnlyList<OperationTypeResponse>> ListOperationTypesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _db.OperationTypes
+            .AsNoTracking()
+            .OrderBy(o => o.Code)
+            .Select(o => new OperationTypeResponse(o.Id, o.Code, o.Name))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ProductResponse>> ListProductsAsync(CancellationToken cancellationToken = default)
     {
         return await _db.Products

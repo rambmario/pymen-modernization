@@ -16,6 +16,7 @@ public sealed class TestPymenDbContext : DbContext, IPymenDbContext
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<OperationType> OperationTypes => Set<OperationType>();
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<DeliveryNote> DeliveryNotes => Set<DeliveryNote>();
 

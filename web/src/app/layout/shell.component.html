@@ -1,0 +1,16 @@
+<mat-toolbar color="primary" class="shell-toolbar">
+  <a routerLink="/work-orders" class="brand">Pymen</a>
+  <nav class="nav">
+    <a mat-button routerLink="/work-orders" routerLinkActive="active">Órdenes de trabajo</a>
+    @if (auth.hasAnyRole('Admin', 'Planner')) {
+      <a mat-button routerLink="/work-orders/new" routerLinkActive="active">Nueva OT</a>
+    }
+  </nav>
+  <span class="spacer"></span>
+  <span class="user">{{ auth.email() }}</span>
+  <button mat-button type="button" (click)="logout()">Salir</button>
+</mat-toolbar>
+
+<main class="shell-content">
+  <router-outlet />
+</main>

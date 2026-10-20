@@ -1,0 +1,36 @@
+.shell-toolbar {
+  gap: 0.5rem;
+}
+
+.brand {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-right: 0.75rem;
+}
+
+.nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.nav a.active {
+  background: color-mix(in srgb, white 18%, transparent);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user {
+  opacity: 0.9;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+}
+
+.shell-content {
+  padding: 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
