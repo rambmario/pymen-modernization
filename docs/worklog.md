@@ -409,6 +409,12 @@ Paginación/filtros server-side de OT, refactor Angular, y CI GitHub Actions + D
 - .NET: **44 passed, 0 skipped** (26 domain + 7 application + 11 integration).
 - Angular: **11 passed, 0 skipped**.
 
+### CI (GitHub Actions)
+
+- Repo: https://github.com/rambmario/pymen-modernization
+- Primer push: Backend falló (`setup-dotnet` cache exigía `packages.lock.json`).
+- Fix `89dc95c` → run [39407553970](https://github.com/rambmario/pymen-modernization/actions/runs/39407553970): **Backend ✓ + Frontend ✓** (artifact `backend-test-results`).
+
 ### Próximo paso
 
-Push a `main`, revisar primer run de CI; esperar OK.
+Esperar OK.
