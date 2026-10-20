@@ -71,7 +71,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - `GET /api/operation-types` for OT create/detail labels.
 - Server-side work-order list pagination/filters (`items`, `page`, `pageSize`, `totalCount`; max pageSize 100).
 - GitHub Actions CI (backend + frontend), Dependabot (NuGet/npm/Actions), CI badge (ADR 0008).
-- Dependabot grouped updates; majors ignored for Angular/TypeScript/Vitest and selected NuGet packages.
+- Dependabot grouped updates; majors ignored for Angular/TypeScript/Vitest/jsdom and selected NuGet packages.
+- Central Package Management (`Directory.Packages.props`) so NuGet versions are defined once.
 
 ### Changed
 

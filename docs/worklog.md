@@ -440,3 +440,28 @@ Limpiar PRs de Dependabot post Paso 6 sin meter majors a ciegas.
 ### Próximo paso
 
 Esperar OK (Fase 2 o Angular 22 coordinado).
+
+---
+
+## 2026-10-20 — Dependabot reabrió PRs: limpieza + CPM
+
+**Hora (aprox.):** 10:50 (UTC-3)
+
+### Objetivo
+
+Atender el follow-up del remoto: Dependabot reabrió majors tras el cambio de config.
+
+### Qué pasó
+
+Al cerrar PRs, Dependabot respondió “OK, I won't notify…”. Al pushear `dependabot.yml` con grupos, volvió a abrir #23–#33 (majors por cada `.csproj` de tests) + #34 (patch OK) + #27 (upload-artifact).
+
+### Qué se hizo
+
+- Merge #34 (xunit.runner 3.1.5) y #27 (upload-artifact v7).
+- Cierre de majors con `@dependabot ignore this major version`.
+- `Directory.Packages.props` (Central Package Management) para una sola versión compartida → menos PRs duplicados.
+- Dependabot: grupos solo minor/patch; ignore jsdom major.
+
+### Próximo paso
+
+Esperar OK.
