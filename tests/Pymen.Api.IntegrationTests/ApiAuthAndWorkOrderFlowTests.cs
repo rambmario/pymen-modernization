@@ -6,6 +6,7 @@ using FluentAssertions;
 using Pymen.Api.IntegrationTests.Infrastructure;
 using Pymen.Application.Auth;
 using Pymen.Application.Catalog;
+using Pymen.Application.Common;
 using Pymen.Application.Production;
 
 namespace Pymen.Api.IntegrationTests;
@@ -105,9 +106,10 @@ public sealed class ApiAuthAndWorkOrderFlowTests : IAsyncLifetime
 
         var adminB = await LoginAsync("admin.t2@demo.local", "AdminPass123");
         Authorize(adminB.AccessToken);
-        var ordersB = await _client!.GetFromJsonAsync<List<WorkOrderResponse>>("/api/work-orders", JsonOptions);
-        ordersB.Should().NotBeEmpty();
-        var foreignId = ordersB![0].Id;
+        var ordersB = await _client!.GetFromJsonAsync<PagedResult<WorkOrderResponse>>("/api/work-orders", JsonOptions);
+        ordersB.Should().NotBeNull();
+        ordersB!.Items.Should().NotBeEmpty();
+        var foreignId = ordersB.Items[0].Id;
 
         var adminA = await LoginAsync("admin.t1@demo.local", "AdminPass123");
         Authorize(adminA.AccessToken);
@@ -122,8 +124,10 @@ public sealed class ApiAuthAndWorkOrderFlowTests : IAsyncLifetime
 
         var planner = await LoginAsync("planner.t1@demo.local", "PlannerPass123");
         Authorize(planner.AccessToken);
-        var orders = await _client!.GetFromJsonAsync<List<WorkOrderResponse>>("/api/work-orders", JsonOptions);
-        var draft = orders!.First(o => o.Status == "Draft");
+        var orders = await _client!.GetFromJsonAsync<PagedResult<WorkOrderResponse>>(
+            "/api/work-orders?status=Draft&pageSize=50",
+            JsonOptions);
+        var draft = orders!.Items.First(o => o.Status == "Draft");
 
         var op = await LoginAsync("operator.t1@demo.local", "OperatorPass123");
         Authorize(op.AccessToken);

@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Pymen.Application.Abstractions;
+using Pymen.Application.Common;
 using Pymen.Domain.Production;
 
 namespace Pymen.Application.Production;
 
 public sealed class WorkOrderService
 {
+    public const int MaxPageSize = 100;
+    public const int DefaultPageSize = 20;
+
     private readonly IPymenDbContext _db;
     private readonly ITenantContext _tenant;
     private readonly IWorkOrderNumberAllocator _allocator;
@@ -23,10 +27,43 @@ public sealed class WorkOrderService
         _time = time;
     }
 
-    public async Task<IReadOnlyList<WorkOrderResponse>> ListAsync(CancellationToken cancellationToken = default)
+    public async Task<PagedResult<WorkOrderResponse>> ListAsync(
+        WorkOrderListQuery query,
+        CancellationToken cancellationToken = default)
     {
-        var items = await Query().AsNoTracking().OrderByDescending(w => w.CreatedAt).ToListAsync(cancellationToken);
-        return items.Select(w => w.ToResponse()).ToList();
+        var page = query.Page < 1 ? 1 : query.Page;
+        var pageSize = query.PageSize < 1
+            ? DefaultPageSize
+            : Math.Min(query.PageSize, MaxPageSize);
+
+        var filtered = _db.WorkOrders.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(query.Status)
+            && Enum.TryParse<WorkOrderStatus>(query.Status, ignoreCase: true, out var status))
+        {
+            filtered = filtered.Where(w => w.Status == status);
+        }
+
+        if (query.CustomerId is { } customerId && customerId != Guid.Empty)
+        {
+            filtered = filtered.Where(w => w.CustomerId == customerId);
+        }
+
+        var totalCount = await filtered.CountAsync(cancellationToken);
+
+        var items = await filtered
+            .OrderByDescending(w => w.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(w => w.Lines)
+            .Include(w => w.Operations)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<WorkOrderResponse>(
+            items.Select(w => w.ToResponse()).ToList(),
+            page,
+            pageSize,
+            totalCount);
     }
 
     public async Task<WorkOrderResponse?> GetAsync(Guid id, CancellationToken cancellationToken = default)

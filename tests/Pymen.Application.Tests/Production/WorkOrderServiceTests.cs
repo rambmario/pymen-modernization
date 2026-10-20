@@ -56,6 +56,50 @@ public sealed class WorkOrderServiceTests
     }
 
     [Fact]
+    public async Task List_filters_by_status_and_pages_in_query()
+    {
+        await using var db = CreateDb();
+        var tenant = await SeedTenantAsync(db);
+        var customer = Customer.Create(tenant.Id, "Cliente");
+        var product = Product.Create(tenant.Id, "FG-1", "Finished", false);
+        db.Customers.Add(customer);
+        db.Products.Add(product);
+        await db.SaveChangesAsync();
+
+        var time = new FakeTimeProvider(DateTimeOffset.Parse("2026-10-19T12:00:00Z"));
+        var sut = CreateSut(db, tenant, new InMemoryAllocator(db, time), time);
+
+        for (var i = 0; i < 3; i++)
+        {
+            var created = await sut.CreateAsync(new CreateWorkOrderRequest(
+                customer.Id,
+                $"draft-{i}",
+                [new WorkOrderLineRequest(product.Id, 1)],
+                null));
+            if (i == 0)
+            {
+                await sut.StartAsync(created.Id);
+            }
+
+            time.Advance(TimeSpan.FromMinutes(1));
+        }
+
+        var page1 = await sut.ListAsync(new WorkOrderListQuery(Status: nameof(WorkOrderStatus.Draft), Page: 1, PageSize: 1));
+        page1.TotalCount.Should().Be(2);
+        page1.Page.Should().Be(1);
+        page1.PageSize.Should().Be(1);
+        page1.Items.Should().HaveCount(1);
+        page1.Items[0].Status.Should().Be(nameof(WorkOrderStatus.Draft));
+
+        var page2 = await sut.ListAsync(new WorkOrderListQuery(Status: nameof(WorkOrderStatus.Draft), Page: 2, PageSize: 1));
+        page2.Items.Should().HaveCount(1);
+        page2.Items[0].Id.Should().NotBe(page1.Items[0].Id);
+
+        var capped = await sut.ListAsync(new WorkOrderListQuery(PageSize: 500));
+        capped.PageSize.Should().Be(WorkOrderService.MaxPageSize);
+    }
+
+    [Fact]
     public async Task Delivery_note_create_returns_null_when_work_order_missing()
     {
         await using var db = CreateDb();

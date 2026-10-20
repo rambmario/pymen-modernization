@@ -1,5 +1,11 @@
 namespace Pymen.Application.Production;
 
+public sealed record WorkOrderListQuery(
+    string? Status = null,
+    Guid? CustomerId = null,
+    int Page = 1,
+    int PageSize = 20);
+
 public sealed record WorkOrderLineRequest(Guid ProductId, decimal Quantity);
 
 public sealed record WorkOrderOperationRequest(Guid OperationTypeId);

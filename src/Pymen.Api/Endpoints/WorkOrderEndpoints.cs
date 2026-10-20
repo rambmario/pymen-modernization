@@ -11,8 +11,19 @@ public static class WorkOrderEndpoints
         var group = app.MapGroup("/api/work-orders")
             .WithTags("WorkOrders");
 
-        group.MapGet("/", async (WorkOrderService workOrders, CancellationToken ct) =>
-                Results.Ok(await workOrders.ListAsync(ct)))
+        group.MapGet("/", async (
+                WorkOrderService workOrders,
+                string? status,
+                Guid? customerId,
+                int page = 1,
+                int pageSize = WorkOrderService.DefaultPageSize,
+                CancellationToken ct = default) =>
+            {
+                var result = await workOrders.ListAsync(
+                    new WorkOrderListQuery(status, customerId, page, pageSize),
+                    ct);
+                return Results.Ok(result);
+            })
             .RequireAuthorization(policy => policy.RequireRole(AppRoles.Admin, AppRoles.Planner, AppRoles.Operator));
 
         group.MapGet("/{id:guid}", async (Guid id, WorkOrderService workOrders, CancellationToken ct) =>
