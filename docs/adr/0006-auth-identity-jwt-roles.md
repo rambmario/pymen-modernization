@@ -37,3 +37,4 @@ Paso 4 de la Fase 1: la API necesita autenticación multi-tenant sin aceptar `Te
 
 - Seed de usuarios demo por tenant tras datos de negocio (solo Dev / flag).
 - Tests cubren login, flujo OT, cross-tenant 404, Operator 403, arranque sin JWT, 401 por FallbackPolicy y 429 en login.
+- Los casos de uso de negocio viven en Application (`*Service` + `IPymenDbContext`); la API solo adapta HTTP (refactor post Paso 4).

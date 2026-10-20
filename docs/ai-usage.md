@@ -191,3 +191,23 @@ API con Identity+JWT, roles, middleware de tenant, Minimal APIs, FluentValidatio
 ### Tiempo estimado ahorrado
 
 ~4–6 h de wiring auth/endpoints/tests.
+
+---
+
+## 2026-10-19 — fix(auth) + refactor(application)
+
+### Pedido principal
+
+Hardening JWT/authz/rate-limit/seed y mover casos de uso a Application con tests unitarios.
+
+### Qué generó la IA
+
+- Commits `fix(auth)` y `refactor(application)`, servicios, IPymenDbContext, suite Application.Tests, registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión humana de límites de rate y superficie de servicios.
+
+### Tiempo estimado ahorrado
+
+~2–3 h.
