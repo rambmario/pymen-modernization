@@ -78,3 +78,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Changed
 
 - Angular work-order list uses server pagination; subscriptions use `takeUntilDestroyed`; detail binds route `id` via `withComponentInputBinding()`.
+- Local Docker SQL published on host port **14333** (avoids clashing with a local SQL Server on 1433).
+
+### Added
+
+- README screenshots (`docs/images/*.png`) and Playwright regen script (`web`: `npm run screenshots`).

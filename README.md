@@ -116,7 +116,12 @@ dotnet run --project src/Pymen.Api --launch-profile http
 
 # 4. SPA  →  http://localhost:4200  (proxies /api to the API)
 cd web && npm ci && npm start
+
+# 5. Optional — regenerate README screenshots (API + SPA must be running)
+cd web && npm run screenshots
 ```
+
+Docker SQL is published on host port **14333** (avoids clashing with a local SQL Server on 1433).
 
 **Demo users** (passwords come from `.env` / `DEMO_PASSWORD_*` — not listed here):
 
@@ -152,10 +157,9 @@ CI runs both jobs on every push/PR to `main`: [workflow](https://github.com/ramb
 
 ---
 
-<!-- Screenshots: uncomment when docs/images/{login,work-order-list,work-order-detail}.png exist
 ## Screenshots
 
-> Add captures under [`docs/images/`](docs/images/) (see that folder’s README for framing tips).
+Captured against the local Dev stack (`docker compose up -d`, API + SPA). Regenerate with `cd web && npm run screenshots` (reads `DEMO_PASSWORD_PLANNER` from `.env`; never hardcodes secrets).
 
 | Screen | Image |
 |--------|--------|
@@ -164,7 +168,6 @@ CI runs both jobs on every push/PR to `main`: [workflow](https://github.com/ramb
 | Work-order detail | ![Work-order detail](docs/images/work-order-detail.png) |
 
 ---
--->
 
 ## AI-assisted development
 

@@ -63,6 +63,6 @@ public static class DotEnv
     {
         var password = RequireSqlPassword();
         return
-            $"Server=localhost,1433;Database={database};User Id=sa;Password={password};TrustServerCertificate=True;Encrypt=False;Connect Timeout={connectTimeoutSeconds}";
+            $"Server=localhost,14333;Database={database};User Id=sa;Password={password};TrustServerCertificate=True;Encrypt=False;Connect Timeout={connectTimeoutSeconds}";
     }
 }

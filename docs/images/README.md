@@ -8,4 +8,4 @@ Place PNG/WebP files here (used by the root README). Suggested captures against 
 | `work-order-list.png` | Work-order list: Material table, status/customer filters, pagination. Prefer Planner/Admin session. |
 | `work-order-detail.png` | Work-order detail: lines + operations with role-aware action buttons (e.g. Start / Finish). |
 
-Until real screenshots exist, the README links to these paths as placeholders.
+Regenerate from `web/` with `npm run screenshots` (Playwright; requires API on `:5207` and SPA on `:4200`).

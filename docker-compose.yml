@@ -6,7 +6,8 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
     ports:
-      - "1433:1433"
+      # Host 14333 avoids clashing with a local SQL Server on 1433 (common on Windows).
+      - "14333:1433"
     volumes:
       - pymen-sql-data:/var/opt/mssql
     healthcheck:

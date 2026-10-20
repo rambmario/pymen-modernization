@@ -485,3 +485,28 @@ README en inglés orientado a recruiters/revisores técnicos + LICENSE MIT + pla
 ### Próximo paso
 
 Esperar OK; Mario agrega capturas reales en `docs/images/`.
+
+---
+
+## 2026-10-20 — Fase 1 / Paso final: screenshots README
+
+**Hora (aprox.):** 15:15–15:30 (UTC-3)
+
+### Objetivo
+
+Capturas reales para el README (login, lista OT, detalle) + script reproducible sin secretos en código.
+
+### Qué se hizo
+
+- Script Playwright `web/scripts/screenshots.ts` + `npm run screenshots` (devDependencies `playwright`/`tsx`; no tests CI).
+- Prepara datos demo vía API (Draft / InProduction / Delivered; detalle con ops Finalizada + Iniciada); password solo desde `.env` (`DEMO_PASSWORD_PLANNER`).
+- Capturas en `docs/images/{login,work-order-list,work-order-detail}.png` (viewport 1400×900); sección Screenshots del README descomentada; nota en Getting started.
+- Docker SQL host port **14333** (conflicto con SQL local `DESARROLLO22` en 1433); connection strings locales alineados.
+
+### Problemas encontrados y cómo se resolvieron
+
+- `Login failed for user 'sa'`: el host resolvía 1433 al SQL Server local, no al contenedor. Remap a `14333:1433`.
+
+### Próximo paso
+
+Esperar OK (cierre Fase 1 / arranque Fase 2).
