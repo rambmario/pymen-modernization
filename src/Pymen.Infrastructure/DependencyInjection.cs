@@ -29,6 +29,7 @@ public static class DependencyInjection
         var connectionString = ResolveConnectionString(configuration);
         services.AddDbContext<PymenDbContext>(options =>
             options.UseSqlServer(connectionString));
+        services.AddScoped<IPymenDbContext>(sp => sp.GetRequiredService<PymenDbContext>());
 
         services
             .AddIdentity<ApplicationUser, IdentityRole>(options =>

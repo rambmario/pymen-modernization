@@ -11,7 +11,7 @@ using Pymen.Infrastructure.Identity;
 
 namespace Pymen.Infrastructure.Persistence;
 
-public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>
+public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>, IPymenDbContext
 {
     private readonly ITenantContext _tenantContext;
 

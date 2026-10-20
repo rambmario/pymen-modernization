@@ -59,3 +59,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Fixed
 
 - JWT signing key required at startup (`ValidateOnStart`, no fallback); FallbackPolicy requires auth; login rate-limited (429); demo seed gated to Development / `Seed:Enabled`; removed DELETE work-order (cancel via POST only).
+
+### Changed
+
+- Application services (`CatalogService`, `WorkOrderService`, `DeliveryNoteService`) own use cases via `IPymenDbContext`; API endpoints only map HTTP ↔ services; added `Pymen.Application.Tests`.

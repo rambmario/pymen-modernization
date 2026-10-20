@@ -336,3 +336,27 @@ API Minimal: Identity/JWT, roles, tenant claim middleware, endpoints de catálog
 ### Próximo paso
 
 Paso 5+. Esperar OK.
+
+---
+
+## 2026-10-19 — fix(auth) + refactor(application) post Paso 4
+
+**Hora (aprox.):** 22:56 (UTC-3)
+
+### Objetivo
+
+Hardening de auth y mover casos de uso a Application antes del Paso 5.
+
+### Qué se hizo
+
+**fix(auth):** ValidateOnStart JWT sin fallback; FallbackPolicy; rate limit login; seed Dev/`Seed:Enabled`; sin DELETE OT; tests 401/429/arranque.
+
+**refactor(application):** `IPymenDbContext`, `CatalogService` / `WorkOrderService` / `DeliveryNoteService` (FindWorkOrder unificado); endpoints delgados; `tests/Pymen.Application.Tests`.
+
+### Tests (Docker Desktop)
+
+**42 passed, 0 skipped** (26 domain + 6 application + 10 integration).
+
+### Próximo paso
+
+Paso 5. Esperar OK.
