@@ -32,3 +32,12 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Changed
 
 - Domain uses `TimeProvider` for timestamps, UUID v7 ids, and cascade-cancels open operations when a work order is cancelled.
+
+### Added
+
+- EF Core 10 + SQL Server persistence (`PymenDbContext`, Fluent configs, `InitialCreate` migration).
+- Global `TenantId` query filters; `AmbientTenantContext`.
+- `Tenant.RowVersion` + `WorkOrderNumberAllocator` retries; unique indexes for work-order numbers, SKUs, and codes per tenant.
+- `docker-compose.yml` (SQL Server 2022), fictitious `DemoDataSeeder`, `/health` vs `/health/ready`.
+- Parallel work-order numbering integration test (Testcontainers; skipped without Docker).
+- ADR 0004: EF Core + SQL Server persistence.

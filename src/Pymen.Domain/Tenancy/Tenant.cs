@@ -9,6 +9,11 @@ public sealed class Tenant : Entity
     public int NextWorkOrderSequence { get; private set; } = 1;
     public bool IsActive { get; private set; } = true;
 
+    /// <summary>
+    /// Optimistic concurrency token for safe work-order numbering under parallel allocates.
+    /// </summary>
+    public byte[] RowVersion { get; private set; } = [];
+
     private Tenant()
     {
     }

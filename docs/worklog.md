@@ -250,3 +250,37 @@ Ajustes de dominio pedidos antes del Paso 3.
 ### Próximo paso
 
 Paso 3 (persistencia).
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 3: EF Core + SQL Server
+
+**Hora (aprox.):** 21:22–21:35 (UTC-3)
+
+### Objetivo de la sesión
+
+Persistencia EF Core, filtros TenantId, migración inicial, docker-compose, seed ficticio, rowversion en Tenant, índices únicos y test de numeración concurrente.
+
+### Qué se hizo
+
+- `PymenDbContext` + Fluent configurations; query filters por tenant.
+- `AmbientTenantContext`, `IWorkOrderNumberAllocator` / `WorkOrderNumberAllocator` con reintentos por `DbUpdateConcurrencyException`.
+- `Tenant.RowVersion`; índices únicos `(TenantId, Number|Sku|Code)`.
+- Migración `InitialCreate`; `DemoDataSeeder`; `docker-compose.yml` (SQL Server 2022).
+- API: `/health` (liveness) vs `/health/ready` (DB); `SkipSeed` para smoke.
+- Integration test de dos OT en paralelo (Testcontainers; skip sin Docker).
+- ADR 0004.
+
+### Decisiones tomadas y por qué
+
+- Optimistic concurrency en Tenant (no bloqueo pesimista) + unique index como red de seguridad.
+- Smoke de API sin SQL real (`Connect Timeout=1` + SkipSeed) para no depender de Docker en CI local.
+
+### Problemas encontrados y cómo se resolvieron
+
+- `Assert.Skip` en xUnit 2 colisionaba con `AsyncEnumerable.Skip` (CS0411): se usó `Xunit.SkippableFact` + `Skip.If`.
+- `/health` incluía el check de DB: Predicate excluye tag `ready`.
+
+### Próximo paso
+
+Paso 4 (API Identity/JWT u siguiente del plan). Esperar OK.

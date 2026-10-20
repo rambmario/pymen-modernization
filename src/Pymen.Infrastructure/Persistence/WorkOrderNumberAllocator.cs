@@ -1,0 +1,68 @@
+using Microsoft.EntityFrameworkCore;
+using Pymen.Application.Abstractions;
+using Pymen.Domain.Common;
+using Pymen.Domain.Production;
+
+namespace Pymen.Infrastructure.Persistence;
+
+public sealed class WorkOrderNumberAllocator : IWorkOrderNumberAllocator
+{
+    private readonly PymenDbContext _db;
+    private readonly TimeProvider _timeProvider;
+
+    public WorkOrderNumberAllocator(PymenDbContext db, TimeProvider timeProvider)
+    {
+        _db = db;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<WorkOrder> CreateWorkOrderAsync(
+        Guid tenantId,
+        Guid customerId,
+        string? notes = null,
+        CancellationToken cancellationToken = default)
+    {
+        const int maxAttempts = 8;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            var tenant = await _db.Tenants
+                .SingleOrDefaultAsync(t => t.Id == tenantId, cancellationToken)
+                ?? throw new DomainException($"Tenant '{tenantId}' was not found.");
+
+            var customerExists = await _db.Customers
+                .IgnoreQueryFilters()
+                .AnyAsync(c => c.Id == customerId && c.TenantId == tenantId, cancellationToken);
+
+            if (!customerExists)
+            {
+                throw new DomainException("Customer was not found for the tenant.");
+            }
+
+            var workOrder = WorkOrder.Create(tenant, customerId, _timeProvider, notes);
+            _db.WorkOrders.Add(workOrder);
+
+            try
+            {
+                await _db.SaveChangesAsync(cancellationToken);
+                return workOrder;
+            }
+            catch (DbUpdateConcurrencyException) when (attempt < maxAttempts)
+            {
+                foreach (var entry in _db.ChangeTracker.Entries().ToList())
+                {
+                    if (entry.Entity == workOrder)
+                    {
+                        entry.State = EntityState.Detached;
+                    }
+                    else
+                    {
+                        await entry.ReloadAsync(cancellationToken);
+                    }
+                }
+            }
+        }
+
+        throw new DomainException("Could not allocate a unique work-order number after concurrent retries.");
+    }
+}

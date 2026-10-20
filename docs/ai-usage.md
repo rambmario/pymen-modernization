@@ -131,3 +131,23 @@ Dominio: entidades, ITenantOwned, estados OT/operaciones, numeración, remito si
 ### Tiempo estimado ahorrado
 
 ~2–3 h de modelado y tests de máquina de estados.
+
+---
+
+## 2026-10-19 — refactor(domain) + Fase 1 / Paso 3
+
+### Pedido principal
+
+Ajustes de dominio (Guid v7, cascade cancel, TimeProvider, props, pregunta abierta) y luego Paso 3: EF Core, TenantId, rowversion, índices únicos, test de numeración paralela.
+
+### Qué generó la IA
+
+- Refactor de dominio (commit previo) + capa Persistence completa, migración, docker-compose, seed, allocator con reintentos, ADR 0004, test de concurrencia, registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión humana de filtros, índices y comportamiento del allocator bajo carga.
+
+### Tiempo estimado ahorrado
+
+~3–4 h de wiring EF/migraciones/Testcontainers y pelea con health/skips.
