@@ -44,4 +44,15 @@ public sealed class Product : Entity, ITenantOwned
             IsActive = true
         };
     }
+
+    public void Update(string name, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainException("Product name is required.");
+        }
+
+        Name = name.Trim();
+        IsActive = isActive;
+    }
 }

@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Pymen.Application.Abstractions;
 using Pymen.Domain.Catalog;
@@ -6,10 +7,11 @@ using Pymen.Domain.Common;
 using Pymen.Domain.Inventory;
 using Pymen.Domain.Production;
 using Pymen.Domain.Tenancy;
+using Pymen.Infrastructure.Identity;
 
 namespace Pymen.Infrastructure.Persistence;
 
-public sealed class PymenDbContext : DbContext
+public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>
 {
     private readonly ITenantContext _tenantContext;
 
@@ -35,7 +37,19 @@ public sealed class PymenDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PymenDbContext).Assembly);
+
+        modelBuilder.Entity<ApplicationUser>(builder =>
+        {
+            builder.Property(x => x.TenantId).IsRequired();
+            builder.HasIndex(x => x.TenantId);
+            builder.HasOne<Tenant>()
+                .WithMany()
+                .HasForeignKey(x => x.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
         ApplyFailClosedTenantFilters(modelBuilder);
     }
 

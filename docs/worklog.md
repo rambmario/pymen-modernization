@@ -307,3 +307,32 @@ Ajustes de revisión del Paso 3 antes del Paso 4.
 ### Próximo paso
 
 Paso 4. Esperar OK.
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 4: API Identity + JWT
+
+**Hora (aprox.):** 22:26 (UTC-3)
+
+### Objetivo
+
+API Minimal: Identity/JWT, roles, tenant claim middleware, endpoints de catálogo/OT/ops/remitos, OpenAPI+Scalar, tests de integración.
+
+### Qué se hizo
+
+- Identity (`ApplicationUser` + TenantId), roles Admin/Planner/Operator, JWT con claim `tenant_id`.
+- Middleware fail-closed: sin claim → 401; nunca TenantId en body/query.
+- Endpoints agrupados: auth, customers, products, work-orders (+ start/deliver/invoice/cancel), operations, delivery-notes.
+- FluentValidation → 400; DomainException → 422; concurrencia → 409; cross-tenant → 404.
+- Seed de usuarios demo con passwords desde `.env`; Scalar + OpenAPI; migración `AddIdentity`.
+- Integration tests: login, flujo OT, cross-tenant 404, Operator 403.
+- ADR 0006.
+
+### Problemas y solución
+
+- Seed de usuarios fallaba si la DB compartida ya tenía otros tenants: factory API usa catalog `Pymen_Api_Integration`.
+- Create OT en dos SaveChanges chocaba con RowVersion: allocator persiste header+líneas en un solo save + `ChangeTracker.Clear` en retries.
+
+### Próximo paso
+
+Paso 5+. Esperar OK.

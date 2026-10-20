@@ -33,4 +33,16 @@ public sealed class Customer : Entity, ITenantOwned
             IsActive = true
         };
     }
+
+    public void Update(string name, string? taxId, bool isActive)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainException("Customer name is required.");
+        }
+
+        Name = name.Trim();
+        TaxId = string.IsNullOrWhiteSpace(taxId) ? null : taxId.Trim();
+        IsActive = isActive;
+    }
 }

@@ -171,3 +171,23 @@ Fail-closed tenant filter, FKs Restrict, test de aislamiento, password en `.env`
 ### Tiempo estimado ahorrado
 
 ~1.5–2 h.
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 4
+
+### Pedido principal
+
+API con Identity+JWT, roles, middleware de tenant, Minimal APIs, FluentValidation, Scalar, tests (login, flujo OT, 404 cross-tenant, 403 Operator).
+
+### Qué generó la IA
+
+- Capa API completa, Identity, seed de usuarios, ADR 0006, tests de integración, registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión humana de matriz de roles y contratos de endpoints.
+
+### Tiempo estimado ahorrado
+
+~4–6 h de wiring auth/endpoints/tests.

@@ -11,8 +11,9 @@ public sealed class Tenant : Entity
 
     /// <summary>
     /// Optimistic concurrency token for safe work-order numbering under parallel allocates.
+    /// Populated by SQL Server; do not initialize to an empty array (breaks EF concurrency checks).
     /// </summary>
-    public byte[] RowVersion { get; private set; } = [];
+    public byte[] RowVersion { get; private set; } = null!;
 
     private Tenant()
     {

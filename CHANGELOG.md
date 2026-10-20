@@ -48,3 +48,10 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Restrict foreign keys for tenant-owned entities and related catalog/inventory/production references; migration `AddRestrictForeignKeys`.
 - Dev SQL password moved to `.env` (gitignored) with `.env.example`; docker-compose and tests load it from there.
 - Integration test for tenant isolation (tenant A vs B; empty when no tenant).
+
+### Added
+
+- ASP.NET Identity + JWT auth with roles Admin/Planner/Operator; demo users seeded from `.env` passwords (ADR 0006).
+- Tenant middleware from JWT `tenant_id` claim; Minimal API endpoints for auth, customers, products, work-orders, operations, delivery-notes.
+- FluentValidation (400), DomainException ProblemDetails (422), concurrency (409); OpenAPI + Scalar.
+- Integration tests: login, full work-order flow, cross-tenant 404, Operator cancel 403.

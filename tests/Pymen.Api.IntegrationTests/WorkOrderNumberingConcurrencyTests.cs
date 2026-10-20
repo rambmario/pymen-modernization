@@ -52,7 +52,7 @@ public sealed class WorkOrderNumberingConcurrencyTests
             {
                 await using var inner = provider.CreateAsyncScope();
                 var allocator = inner.ServiceProvider.GetRequiredService<IWorkOrderNumberAllocator>();
-                return await allocator.CreateWorkOrderAsync(tenantId, customerId);
+                return await allocator.CreateWorkOrderAsync(tenantId, customerId, notes: null);
             }))
             .ToArray();
 

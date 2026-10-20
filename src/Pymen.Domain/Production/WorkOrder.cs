@@ -123,6 +123,12 @@ public sealed class WorkOrder : Entity, ITenantOwned
         CancelledAt = timeProvider.GetUtcNow();
     }
 
+    public void UpdateNotes(string? notes)
+    {
+        EnsureEditable();
+        Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+    }
+
     private void EnsureEditable()
     {
         if (Status is not (WorkOrderStatus.Draft or WorkOrderStatus.InProduction))

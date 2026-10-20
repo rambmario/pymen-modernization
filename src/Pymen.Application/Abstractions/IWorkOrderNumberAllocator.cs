@@ -8,5 +8,7 @@ public interface IWorkOrderNumberAllocator
         Guid tenantId,
         Guid customerId,
         string? notes = null,
+        IReadOnlyList<(Guid ProductId, decimal Quantity)>? lines = null,
+        IReadOnlyList<Guid>? operationTypeIds = null,
         CancellationToken cancellationToken = default);
 }
