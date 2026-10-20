@@ -418,3 +418,25 @@ Paginación/filtros server-side de OT, refactor Angular, y CI GitHub Actions + D
 ### Próximo paso
 
 Esperar OK.
+
+---
+
+## 2026-10-20 — Follow-up: triage Dependabot
+
+**Hora (aprox.):** 09:46 (UTC-3)
+
+### Objetivo
+
+Limpiar PRs de Dependabot post Paso 6 sin meter majors a ciegas.
+
+### Qué se hizo
+
+**Merged (CI verde):** #21 SkippableFact, #17 TimeProvider.Testing, #19 Scalar, #2 setup-dotnet, #3 setup-node, #4 checkout, #22 cache.
+
+**Closed (major / CI rojo):** Angular 22 piecemeal (#5–14), Vitest 5, TypeScript 7, FluentValidation 12, coverlet 10, Test.Sdk 18, xunit.runner 4, upload-artifact 7 (#1, backend rojo en ese PR).
+
+**Config:** Dependabot con grupos + ignore de majors Angular/TS/Vitest/FluentValidation/coverlet/Test.Sdk/xunit.runner.
+
+### Próximo paso
+
+Esperar OK (Fase 2 o Angular 22 coordinado).

@@ -251,3 +251,23 @@ OK Paso 5 → paginación API/web en commits separados; Paso 6 CI + Dependabot; 
 ### Tiempo estimado ahorrado
 
 ~3–4 h.
+
+---
+
+## 2026-10-20 — Follow-up Dependabot
+
+### Pedido principal
+
+Follow-up tras Paso 6 (triage implícito de Dependabot).
+
+### Qué generó la IA
+
+- Merge de 7 PRs seguros, cierre de majors, ajuste `dependabot.yml`, worklog.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano para Fase 2 / upgrade Angular.
+
+### Tiempo estimado ahorrado
+
+~1 h.
