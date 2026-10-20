@@ -9,7 +9,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
-- Repository scaffolding: README, CHANGELOG, `.gitignore`, `docs/worklog.md`, `docs/ai-usage.md`, `docs/adr/`, `docs/legacy/`.
+- Recruiter-oriented English README (architecture Mermaid, ADRs, getting started, testing, screenshots placeholders); MIT LICENSE.
+- Repository scaffolding: CHANGELOG, `.gitignore`, `docs/worklog.md`, `docs/ai-usage.md`, `docs/adr/`, `docs/legacy/`.
 - Legacy system analysis (`docs/legacy/legacy-analysis.md`).
 - Migration proposal and MVP roadmap (`docs/legacy/migration-proposal.md`).
 - ADR 0001: strangler-fig modernization strategy.

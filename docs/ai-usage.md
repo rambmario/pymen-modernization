@@ -271,3 +271,23 @@ Follow-up tras Paso 6 (triage implícito de Dependabot).
 ### Tiempo estimado ahorrado
 
 ~1 h.
+
+---
+
+## 2026-10-20 — Paso 7 README
+
+### Pedido principal
+
+OK Paso 6 → README recruiter/técnico EN, LICENSE MIT, placeholders screenshots.
+
+### Qué generó la IA
+
+- README completo, LICENSE, docs/images guía, worklog/CHANGELOG.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente capturas reales y OK humano del tono del README.
+
+### Tiempo estimado ahorrado
+
+~1–1.5 h.
