@@ -12,9 +12,15 @@ updates:
           - "xunit*"
           - "coverlet.*"
           - "Xunit.*"
+        update-types:
+          - "minor"
+          - "patch"
       microsoft-extensions:
         patterns:
           - "Microsoft.Extensions.*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: "FluentValidation*"
         update-types: ["version-update:semver-major"]
@@ -34,18 +40,26 @@ updates:
       angular:
         patterns:
           - "@angular/*"
+        update-types:
+          - "minor"
+          - "patch"
       tooling:
         patterns:
           - "typescript"
           - "vitest"
           - "jsdom"
           - "prettier"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: "@angular/*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
       - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "jsdom"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
