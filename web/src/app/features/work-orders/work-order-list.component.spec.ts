@@ -38,30 +38,38 @@ describe('WorkOrderListComponent', () => {
     sessionStorage.clear();
   });
 
-  it('renders work orders from the API', async () => {
+  it('renders work orders from the paged API', async () => {
     const fixture = TestBed.createComponent(WorkOrderListComponent);
     fixture.detectChanges();
 
-    const listReq = http.expectOne('/api/work-orders');
-    listReq.flush([
-      {
-        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-        number: 'OT-100',
-        customerId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-        status: 'Draft',
-        notes: null,
-        createdAt: '2026-10-19T12:00:00Z',
-        startedAt: null,
-        deliveredAt: null,
-        invoicedAt: null,
-        cancelledAt: null,
-        lines: [],
-        operations: [],
-      },
-    ]);
+    const listReq = http.expectOne((r) => r.url === '/api/work-orders');
+    expect(listReq.request.params.get('page')).toBe('1');
+    listReq.flush({
+      items: [
+        {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          number: 'OT-100',
+          customerId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          status: 'Draft',
+          notes: null,
+          createdAt: '2026-10-19T12:00:00Z',
+          startedAt: null,
+          deliveredAt: null,
+          invoicedAt: null,
+          cancelledAt: null,
+          lines: [],
+          operations: [],
+        },
+      ],
+      page: 1,
+      pageSize: 10,
+      totalCount: 1,
+    });
 
     const customersReq = http.expectOne('/api/customers');
-    customersReq.flush([{ id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', name: 'Cliente Demo', taxId: null, isActive: true }]);
+    customersReq.flush([
+      { id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', name: 'Cliente Demo', taxId: null, isActive: true },
+    ]);
 
     fixture.detectChanges();
     await fixture.whenStable();

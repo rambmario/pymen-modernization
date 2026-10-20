@@ -17,30 +17,39 @@ describe('WorkOrderService', () => {
 
   afterEach(() => http.verify());
 
-  it('lists work orders', () => {
-    service.list().subscribe((items) => {
-      expect(items.length).toBe(1);
-      expect(items[0].number).toBe('OT-1');
+  it('lists work orders with paging query params', () => {
+    service.list({ status: 'Draft', page: 2, pageSize: 10 }).subscribe((result) => {
+      expect(result.items.length).toBe(1);
+      expect(result.totalCount).toBe(3);
+      expect(result.page).toBe(2);
     });
 
-    const req = http.expectOne('/api/work-orders');
+    const req = http.expectOne((r) => r.url === '/api/work-orders');
     expect(req.request.method).toBe('GET');
-    req.flush([
-      {
-        id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-        number: 'OT-1',
-        customerId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-        status: 'Draft',
-        notes: null,
-        createdAt: new Date().toISOString(),
-        startedAt: null,
-        deliveredAt: null,
-        invoicedAt: null,
-        cancelledAt: null,
-        lines: [],
-        operations: [],
-      },
-    ]);
+    expect(req.request.params.get('status')).toBe('Draft');
+    expect(req.request.params.get('page')).toBe('2');
+    expect(req.request.params.get('pageSize')).toBe('10');
+    req.flush({
+      items: [
+        {
+          id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+          number: 'OT-1',
+          customerId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          status: 'Draft',
+          notes: null,
+          createdAt: new Date().toISOString(),
+          startedAt: null,
+          deliveredAt: null,
+          invoicedAt: null,
+          cancelledAt: null,
+          lines: [],
+          operations: [],
+        },
+      ],
+      page: 2,
+      pageSize: 10,
+      totalCount: 3,
+    });
   });
 
   it('posts start action', () => {

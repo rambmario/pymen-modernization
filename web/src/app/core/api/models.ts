@@ -73,6 +73,20 @@ export interface WorkOrderResponse {
   operations: WorkOrderOperationResponse[];
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+
+export interface WorkOrderListParams {
+  status?: string;
+  customerId?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface WorkOrderLineRequest {
   productId: string;
   quantity: number;

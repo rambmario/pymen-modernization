@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Component, DestroyRef, OnInit, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -32,11 +33,14 @@ import { WorkOrderService } from '../../core/work-orders/work-order.service';
   styleUrl: './work-order-detail.component.scss',
 })
 export class WorkOrderDetailComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
   private readonly workOrdersApi = inject(WorkOrderService);
   private readonly catalog = inject(CatalogService);
   private readonly apiErrors = inject(ApiErrorService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly auth = inject(AuthService);
+
+  /** Bound from route param `:id` via `withComponentInputBinding()`. */
+  readonly id = input.required<string>();
 
   readonly loading = signal(true);
   readonly busy = signal(false);
@@ -49,10 +53,7 @@ export class WorkOrderDetailComponent implements OnInit {
   readonly statusLabel = workOrderStatusLabel;
   readonly opStatusLabel = operationStatusLabel;
 
-  private workOrderId = '';
-
   ngOnInit(): void {
-    this.workOrderId = this.route.snapshot.paramMap.get('id') ?? '';
     this.reload();
   }
 
@@ -107,44 +108,46 @@ export class WorkOrderDetailComponent implements OnInit {
       return;
     }
     this.busy.set(true);
-    action().subscribe({
-      next: (updated) => {
-        this.workOrder.set(updated);
-        this.busy.set(false);
-      },
-      error: (error) => {
-        this.busy.set(false);
-        this.apiErrors.showHttpError(error);
-      },
-    });
+    action()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.workOrder.set(updated);
+          this.busy.set(false);
+        },
+        error: (error) => {
+          this.busy.set(false);
+          this.apiErrors.showHttpError(error);
+        },
+      });
   }
 
   startWorkOrder(): void {
-    this.run(() => this.workOrdersApi.start(this.workOrderId));
+    this.run(() => this.workOrdersApi.start(this.id()));
   }
 
   deliver(): void {
-    this.run(() => this.workOrdersApi.deliver(this.workOrderId));
+    this.run(() => this.workOrdersApi.deliver(this.id()));
   }
 
   invoice(): void {
-    this.run(() => this.workOrdersApi.invoice(this.workOrderId));
+    this.run(() => this.workOrdersApi.invoice(this.id()));
   }
 
   cancelWorkOrder(): void {
-    this.run(() => this.workOrdersApi.cancel(this.workOrderId));
+    this.run(() => this.workOrdersApi.cancel(this.id()));
   }
 
   startOperation(operationId: string): void {
-    this.run(() => this.workOrdersApi.startOperation(this.workOrderId, operationId));
+    this.run(() => this.workOrdersApi.startOperation(this.id(), operationId));
   }
 
   finishOperation(operationId: string): void {
-    this.run(() => this.workOrdersApi.finishOperation(this.workOrderId, operationId));
+    this.run(() => this.workOrdersApi.finishOperation(this.id(), operationId));
   }
 
   cancelOperation(operationId: string): void {
-    this.run(() => this.workOrdersApi.cancelOperation(this.workOrderId, operationId));
+    this.run(() => this.workOrdersApi.cancelOperation(this.id(), operationId));
   }
 
   private reload(): void {
@@ -154,20 +157,22 @@ export class WorkOrderDetailComponent implements OnInit {
       : of<ProductResponse[]>([]);
 
     forkJoin({
-      workOrder: this.workOrdersApi.get(this.workOrderId),
+      workOrder: this.workOrdersApi.get(this.id()),
       products: products$,
       operationTypes: this.catalog.listOperationTypes(),
-    }).subscribe({
-      next: ({ workOrder, products, operationTypes }) => {
-        this.workOrder.set(workOrder);
-        this.products.set(products);
-        this.operationTypes.set(operationTypes);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        this.loading.set(false);
-        this.apiErrors.showHttpError(error);
-      },
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ workOrder, products, operationTypes }) => {
+          this.workOrder.set(workOrder);
+          this.products.set(products);
+          this.operationTypes.set(operationTypes);
+          this.loading.set(false);
+        },
+        error: (error) => {
+          this.loading.set(false);
+          this.apiErrors.showHttpError(error);
+        },
+      });
   }
 }

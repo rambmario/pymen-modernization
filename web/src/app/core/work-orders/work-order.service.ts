@@ -1,14 +1,30 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateWorkOrderRequest, WorkOrderResponse } from '../api/models';
+import {
+  CreateWorkOrderRequest,
+  PagedResult,
+  WorkOrderListParams,
+  WorkOrderResponse,
+} from '../api/models';
 
 @Injectable({ providedIn: 'root' })
 export class WorkOrderService {
   private readonly http = inject(HttpClient);
 
-  list(): Observable<WorkOrderResponse[]> {
-    return this.http.get<WorkOrderResponse[]>('/api/work-orders');
+  list(params: WorkOrderListParams = {}): Observable<PagedResult<WorkOrderResponse>> {
+    let httpParams = new HttpParams()
+      .set('page', String(params.page ?? 1))
+      .set('pageSize', String(params.pageSize ?? 20));
+
+    if (params.status) {
+      httpParams = httpParams.set('status', params.status);
+    }
+    if (params.customerId) {
+      httpParams = httpParams.set('customerId', params.customerId);
+    }
+
+    return this.http.get<PagedResult<WorkOrderResponse>>('/api/work-orders', { params: httpParams });
   }
 
   get(id: string): Observable<WorkOrderResponse> {

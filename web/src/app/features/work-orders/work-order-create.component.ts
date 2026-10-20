@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,6 +33,7 @@ export class WorkOrderCreateComponent implements OnInit {
   private readonly workOrdersApi = inject(WorkOrderService);
   private readonly apiErrors = inject(ApiErrorService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -59,18 +61,20 @@ export class WorkOrderCreateComponent implements OnInit {
       customers: this.catalog.listCustomers(),
       products: this.catalog.listProducts(),
       operationTypes: this.catalog.listOperationTypes(),
-    }).subscribe({
-      next: ({ customers, products, operationTypes }) => {
-        this.customers.set(customers.filter((c) => c.isActive));
-        this.products.set(products.filter((p) => p.isActive && !p.isRawMaterial));
-        this.operationTypes.set(operationTypes);
-        this.loading.set(false);
-      },
-      error: (error) => {
-        this.loading.set(false);
-        this.apiErrors.showHttpError(error);
-      },
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ customers, products, operationTypes }) => {
+          this.customers.set(customers.filter((c) => c.isActive));
+          this.products.set(products.filter((p) => p.isActive && !p.isRawMaterial));
+          this.operationTypes.set(operationTypes);
+          this.loading.set(false);
+        },
+        error: (error) => {
+          this.loading.set(false);
+          this.apiErrors.showHttpError(error);
+        },
+      });
   }
 
   addLine(): void {
@@ -111,6 +115,7 @@ export class WorkOrderCreateComponent implements OnInit {
           .filter((op) => !!op.operationTypeId)
           .map((op) => ({ operationTypeId: op.operationTypeId })),
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (created) => {
           this.saving.set(false);

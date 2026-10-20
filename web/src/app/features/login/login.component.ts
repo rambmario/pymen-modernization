@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,6 +28,7 @@ export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly apiErrors = inject(ApiErrorService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(false);
 
@@ -42,15 +44,18 @@ export class LoginComponent {
     }
 
     this.loading.set(true);
-    this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => {
-        this.loading.set(false);
-        void this.router.navigate(['/work-orders']);
-      },
-      error: (error) => {
-        this.loading.set(false);
-        this.apiErrors.showHttpError(error);
-      },
-    });
+    this.auth
+      .login(this.form.getRawValue())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          void this.router.navigate(['/work-orders']);
+        },
+        error: (error) => {
+          this.loading.set(false);
+          this.apiErrors.showHttpError(error);
+        },
+      });
   }
 }
