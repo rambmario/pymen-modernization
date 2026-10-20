@@ -465,3 +465,23 @@ Al cerrar PRs, Dependabot respondió “OK, I won't notify…”. Al pushear `de
 ### Próximo paso
 
 Esperar OK.
+
+---
+
+## 2026-10-20 — Fase 1 / Paso 7: README portfolio
+
+**Hora (aprox.):** 12:02 (UTC-3)
+
+### Objetivo
+
+README en inglés orientado a recruiters/revisores técnicos + LICENSE MIT + placeholders de screenshots.
+
+### Qué se hizo
+
+- `README.md` reescrito (context legacy sanitizado, Mermaid arquitectura/estados OT, ADRs, stack, getting started, tests, AI usage, roadmap, author).
+- `LICENSE` (MIT); `docs/images/` con guía de capturas (login, lista OT, detalle).
+- Sin contraseñas demo en el README; sin PII ni módulos fuera de alcance listados.
+
+### Próximo paso
+
+Esperar OK; Mario agrega capturas reales en `docs/images/`.
