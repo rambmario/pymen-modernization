@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pymen.Domain.Inventory;
+using Pymen.Domain.Tenancy;
 
 namespace Pymen.Infrastructure.Persistence.Configurations;
 
@@ -13,5 +14,10 @@ public sealed class WarehouseConfiguration : IEntityTypeConfiguration<Warehouse>
         builder.Property(x => x.Code).HasMaxLength(32).IsRequired();
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         builder.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+
+        builder.HasOne<Tenant>()
+            .WithMany()
+            .HasForeignKey(x => x.TenantId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

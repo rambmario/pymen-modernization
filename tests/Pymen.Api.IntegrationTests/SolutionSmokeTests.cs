@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Pymen.Api.IntegrationTests.Infrastructure;
+using Pymen.Infrastructure.Persistence;
 
 namespace Pymen.Api.IntegrationTests;
 
@@ -10,11 +12,13 @@ public class SolutionSmokeTests : IClassFixture<WebApplicationFactory<Program>>
 
     public SolutionSmokeTests(WebApplicationFactory<Program> factory)
     {
+        TestEnvironment.EnsureLoaded();
+        var connection = DotEnv.BuildLocalSqlConnectionString("Pymen_Smoke", connectTimeoutSeconds: 1);
+
         _factory = factory.WithWebHostBuilder(builder =>
         {
             builder.UseSetting("SkipSeed", "true");
-            builder.UseSetting("ConnectionStrings:Pymen",
-                "Server=127.0.0.1,1433;Database=Pymen_Smoke;User Id=sa;Password=Your_password123;TrustServerCertificate=True;Encrypt=False;Connect Timeout=1");
+            builder.UseSetting("ConnectionStrings:Pymen", connection);
         });
     }
 

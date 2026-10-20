@@ -9,7 +9,6 @@ using Pymen.Infrastructure.Persistence;
 #nullable disable
 
 namespace Pymen.Infrastructure.Persistence.Migrations;
-
 [DbContext(typeof(PymenDbContext))]
 partial class PymenDbContextModelSnapshot : ModelSnapshot
 {
@@ -42,6 +41,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("uniqueidentifier");
 
                 b.HasKey("Id");
+
+                b.HasIndex("FinishedProductId");
+
+                b.HasIndex("RawMaterialProductId");
 
                 b.HasIndex("TenantId", "FinishedProductId", "RawMaterialProductId")
                     .IsUnique();
@@ -131,6 +134,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("ProductId");
+
+                b.HasIndex("WarehouseId");
+
                 b.HasIndex("TenantId", "ProductId", "WarehouseId")
                     .IsUnique();
 
@@ -190,6 +197,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("TenantId");
+
+                b.HasIndex("WorkOrderId");
+
                 b.ToTable("DeliveryNotes", (string)null);
             });
 
@@ -218,6 +229,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                 b.HasKey("Id");
 
                 b.HasIndex("DeliveryNoteId");
+
+                b.HasIndex("ProductId");
+
+                b.HasIndex("TenantId");
 
                 b.ToTable("DeliveryNoteLines", (string)null);
             });
@@ -279,6 +294,14 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("ProductId");
+
+                b.HasIndex("TenantId");
+
+                b.HasIndex("WarehouseId");
+
+                b.HasIndex("WorkOrderId");
+
                 b.ToTable("ProductionReceipts", (string)null);
             });
 
@@ -325,6 +348,8 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 
                 b.HasKey("Id");
 
+                b.HasIndex("CustomerId");
+
                 b.HasIndex("TenantId", "Number")
                     .IsUnique();
 
@@ -354,6 +379,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("uniqueidentifier");
 
                 b.HasKey("Id");
+
+                b.HasIndex("ProductId");
+
+                b.HasIndex("TenantId");
 
                 b.HasIndex("WorkOrderId");
 
@@ -387,6 +416,10 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("uniqueidentifier");
 
                 b.HasKey("Id");
+
+                b.HasIndex("OperationTypeId");
+
+                b.HasIndex("TenantId");
 
                 b.HasIndex("WorkOrderId");
 
@@ -429,6 +462,90 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("Tenants", (string)null);
             });
 
+        modelBuilder.Entity("Pymen.Domain.Catalog.BillOfMaterialsLine", b =>
+            {
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("FinishedProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("RawMaterialProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Catalog.Customer", b =>
+            {
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Catalog.Product", b =>
+            {
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Inventory.StockBalance", b =>
+            {
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("ProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Inventory.Warehouse", null)
+                    .WithMany()
+                    .HasForeignKey("WarehouseId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Inventory.Warehouse", b =>
+            {
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Production.DeliveryNote", b =>
+            {
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Production.WorkOrder", null)
+                    .WithMany()
+                    .HasForeignKey("WorkOrderId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
         modelBuilder.Entity("Pymen.Domain.Production.DeliveryNoteLine", b =>
             {
                 b.HasOne("Pymen.Domain.Production.DeliveryNote", null)
@@ -436,10 +553,84 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
                     .HasForeignKey("DeliveryNoteId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
+
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("ProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Production.OperationType", b =>
+            {
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Production.ProductionReceipt", b =>
+            {
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("ProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Inventory.Warehouse", null)
+                    .WithMany()
+                    .HasForeignKey("WarehouseId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Production.WorkOrder", null)
+                    .WithMany()
+                    .HasForeignKey("WorkOrderId")
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+        modelBuilder.Entity("Pymen.Domain.Production.WorkOrder", b =>
+            {
+                b.HasOne("Pymen.Domain.Catalog.Customer", null)
+                    .WithMany()
+                    .HasForeignKey("CustomerId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
             });
 
         modelBuilder.Entity("Pymen.Domain.Production.WorkOrderLine", b =>
             {
+                b.HasOne("Pymen.Domain.Catalog.Product", null)
+                    .WithMany()
+                    .HasForeignKey("ProductId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
                 b.HasOne("Pymen.Domain.Production.WorkOrder", null)
                     .WithMany("Lines")
                     .HasForeignKey("WorkOrderId")
@@ -449,6 +640,18 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Pymen.Domain.Production.WorkOrderOperation", b =>
             {
+                b.HasOne("Pymen.Domain.Production.OperationType", null)
+                    .WithMany()
+                    .HasForeignKey("OperationTypeId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.HasOne("Pymen.Domain.Tenancy.Tenant", null)
+                    .WithMany()
+                    .HasForeignKey("TenantId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
                 b.HasOne("Pymen.Domain.Production.WorkOrder", null)
                     .WithMany("Operations")
                     .HasForeignKey("WorkOrderId")
@@ -470,3 +673,4 @@ partial class PymenDbContextModelSnapshot : ModelSnapshot
 #pragma warning restore 612, 618
     }
 }
+

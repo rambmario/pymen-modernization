@@ -40,4 +40,11 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - `Tenant.RowVersion` + `WorkOrderNumberAllocator` retries; unique indexes for work-order numbers, SKUs, and codes per tenant.
 - `docker-compose.yml` (SQL Server 2022), fictitious `DemoDataSeeder`, `/health` vs `/health/ready`.
 - Parallel work-order numbering integration test (Testcontainers; skipped without Docker).
-- ADR 0004: EF Core + SQL Server persistence.
+- ADR 0005: EF Core + SQL Server persistence.
+
+### Fixed
+
+- Tenant query filters are fail-closed (`CurrentTenantIdOrEmpty`); seed/system paths use `IgnoreQueryFilters()` explicitly (ADR 0004).
+- Restrict foreign keys for tenant-owned entities and related catalog/inventory/production references; migration `AddRestrictForeignKeys`.
+- Dev SQL password moved to `.env` (gitignored) with `.env.example`; docker-compose and tests load it from there.
+- Integration test for tenant isolation (tenant A vs B; empty when no tenant).

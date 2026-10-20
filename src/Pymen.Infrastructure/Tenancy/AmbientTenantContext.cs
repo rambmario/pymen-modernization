@@ -9,6 +9,8 @@ public sealed class AmbientTenantContext : ITenantContext
     public Guid TenantId =>
         _tenantId ?? throw new InvalidOperationException("Tenant context is not set.");
 
+    public Guid CurrentTenantIdOrEmpty => _tenantId ?? Guid.Empty;
+
     public bool HasTenant => _tenantId.HasValue;
 
     public void SetTenant(Guid tenantId)

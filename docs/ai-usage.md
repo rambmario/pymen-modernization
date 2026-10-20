@@ -151,3 +151,23 @@ Ajustes de dominio (Guid v7, cascade cancel, TimeProvider, props, pregunta abier
 ### Tiempo estimado ahorrado
 
 ~3–4 h de wiring EF/migraciones/Testcontainers y pelea con health/skips.
+
+---
+
+## 2026-10-19 — fix(infra) post Paso 3
+
+### Pedido principal
+
+Fail-closed tenant filter, FKs Restrict, test de aislamiento, password en `.env`, tests con Docker sin skips.
+
+### Qué generó la IA
+
+- Cambios de filtro/FKs/migración, ADR 0004, `.env.example`, tests de aislamiento, fixture SQL compartido, registro y commit.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión humana del fail-closed y del set de FKs.
+
+### Tiempo estimado ahorrado
+
+~1.5–2 h.

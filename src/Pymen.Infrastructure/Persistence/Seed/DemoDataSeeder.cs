@@ -21,13 +21,14 @@ public static class DemoDataSeeder
 
         await db.Database.MigrateAsync(cancellationToken);
 
-        if (await db.Tenants.AnyAsync(cancellationToken))
+        // System process: no ambient tenant; use IgnoreQueryFilters for any tenant-owned reads.
+        tenantContext.Clear();
+
+        if (await db.Tenants.IgnoreQueryFilters().AnyAsync(cancellationToken))
         {
             logger.LogInformation("Demo data already present; skipping seed.");
             return;
         }
-
-        tenantContext.Clear();
 
         var metal = Tenant.Create("Metalúrgica Demo", "1");
         var textile = Tenant.Create("Textil Demo", "2");

@@ -4,6 +4,9 @@ using Pymen.Infrastructure;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Infrastructure.Persistence.Seed;
 
+DotEnv.LoadFromAncestorDirectory(Directory.GetCurrentDirectory());
+DotEnv.LoadFromAncestorDirectory(AppContext.BaseDirectory);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();

@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Pymen.Application.Abstractions;
 using Pymen.Domain.Catalog;
+using Pymen.Domain.Common;
 using Pymen.Domain.Inventory;
 using Pymen.Domain.Production;
 using Pymen.Domain.Tenancy;
@@ -34,18 +36,32 @@ public sealed class PymenDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PymenDbContext).Assembly);
+        ApplyFailClosedTenantFilters(modelBuilder);
+    }
 
-        modelBuilder.Entity<Customer>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<Product>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<BillOfMaterialsLine>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<Warehouse>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<StockBalance>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<WorkOrder>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<WorkOrderLine>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<WorkOrderOperation>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<OperationType>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<DeliveryNote>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<DeliveryNoteLine>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
-        modelBuilder.Entity<ProductionReceipt>().HasQueryFilter(e => !_tenantContext.HasTenant || e.TenantId == _tenantContext.TenantId);
+    private void ApplyFailClosedTenantFilters(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(ITenantOwned).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+
+            var method = typeof(PymenDbContext)
+                .GetMethod(nameof(SetTenantQueryFilter), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .MakeGenericMethod(entityType.ClrType);
+
+            method.Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void SetTenantQueryFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ITenantOwned
+    {
+        Expression<Func<TEntity, bool>> filter =
+            e => e.TenantId == _tenantContext.CurrentTenantIdOrEmpty;
+
+        modelBuilder.Entity<TEntity>().HasQueryFilter(filter);
     }
 }

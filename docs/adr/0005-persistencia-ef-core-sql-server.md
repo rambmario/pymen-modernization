@@ -1,4 +1,4 @@
-# ADR 0004 — Persistencia con EF Core y SQL Server
+# ADR 0005 — Persistencia con EF Core y SQL Server
 
 **Estado:** Aceptado  
 **Fecha:** 2026-10-19  

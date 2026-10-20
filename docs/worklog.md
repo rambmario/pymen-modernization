@@ -269,7 +269,7 @@ Persistencia EF Core, filtros TenantId, migración inicial, docker-compose, seed
 - Migración `InitialCreate`; `DemoDataSeeder`; `docker-compose.yml` (SQL Server 2022).
 - API: `/health` (liveness) vs `/health/ready` (DB); `SkipSeed` para smoke.
 - Integration test de dos OT en paralelo (Testcontainers; skip sin Docker).
-- ADR 0004.
+- ADR 0005 (persistencia EF/SQL Server).
 
 ### Decisiones tomadas y por qué
 
@@ -283,4 +283,27 @@ Persistencia EF Core, filtros TenantId, migración inicial, docker-compose, seed
 
 ### Próximo paso
 
-Paso 4 (API Identity/JWT u siguiente del plan). Esperar OK.
+Revisión Paso 3 / fix(infra), luego Paso 4. Esperar OK.
+
+---
+
+## 2026-10-19 — fix(infra): fail-closed tenant filter, FKs, .env
+
+**Hora (aprox.):** 21:46 (UTC-3)
+
+### Objetivo
+
+Ajustes de revisión del Paso 3 antes del Paso 4.
+
+### Qué se hizo
+
+- Filtro fail-closed `CurrentTenantIdOrEmpty` aplicado a todos los `ITenantOwned` en un solo loop; seed con `IgnoreQueryFilters` explícito.
+- ADR 0004 (aislamiento fail-closed); persistencia renumerada a ADR 0005.
+- FKs `DeleteBehavior.Restrict` + migración `AddRestrictForeignKeys`.
+- Integration test de aislamiento A vs B / sin tenant.
+- Contraseña SQL en `.env` (+ `.env.example`); docker-compose y tests la leen vía `DotEnv`.
+- Suite completa con Docker Desktop: **29 passed, 0 skipped** (26 domain + 3 integration).
+
+### Próximo paso
+
+Paso 4. Esperar OK.

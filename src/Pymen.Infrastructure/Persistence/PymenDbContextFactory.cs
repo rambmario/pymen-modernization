@@ -8,9 +8,11 @@ public sealed class PymenDbContextFactory : IDesignTimeDbContextFactory<PymenDbC
 {
     public PymenDbContext CreateDbContext(string[] args)
     {
+        DotEnv.LoadFromAncestorDirectory(Directory.GetCurrentDirectory());
+        DotEnv.LoadFromAncestorDirectory(AppContext.BaseDirectory);
+
         var options = new DbContextOptionsBuilder<PymenDbContext>()
-            .UseSqlServer(
-                "Server=localhost,1433;Database=Pymen;User Id=sa;Password=Your_password123;TrustServerCertificate=True;Encrypt=False")
+            .UseSqlServer(DotEnv.BuildLocalSqlConnectionString("Pymen"))
             .Options;
 
         return new PymenDbContext(options, new AmbientTenantContext());

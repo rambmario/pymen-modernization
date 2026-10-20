@@ -1,58 +1,37 @@
-using DotNet.Testcontainers.Builders;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pymen.Api.IntegrationTests.Infrastructure;
 using Pymen.Application.Abstractions;
 using Pymen.Domain.Catalog;
 using Pymen.Domain.Tenancy;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Infrastructure.Tenancy;
-using Testcontainers.MsSql;
 
 namespace Pymen.Api.IntegrationTests;
 
-public sealed class WorkOrderNumberingConcurrencyTests : IAsyncLifetime
+[Collection(SqlServerCollection.Name)]
+public sealed class WorkOrderNumberingConcurrencyTests
 {
-    private MsSqlContainer? _sql;
-    private bool _dockerAvailable;
+    private readonly SqlServerFixture _sql;
 
-    public async Task InitializeAsync()
+    public WorkOrderNumberingConcurrencyTests(SqlServerFixture sql)
     {
-        try
-        {
-            _sql = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
-                .WithPassword("Your_password123")
-                .Build();
-            await _sql.StartAsync();
-            _dockerAvailable = true;
-        }
-        catch (Exception ex) when (ex is DockerUnavailableException || ex is AggregateException)
-        {
-            _dockerAvailable = false;
-        }
-    }
-
-    public async Task DisposeAsync()
-    {
-        if (_sql is not null)
-        {
-            await _sql.DisposeAsync();
-        }
+        _sql = sql;
     }
 
     [SkippableFact]
     public async Task Parallel_creates_produce_distinct_numbers()
     {
-        Skip.If(!_dockerAvailable || _sql is null, "Docker is not available for Testcontainers SQL Server.");
+        Skip.If(!_sql.IsAvailable, "Docker is not available for Testcontainers SQL Server.");
 
-        var sql = _sql!;
         var services = new ServiceCollection();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<AmbientTenantContext>();
         services.AddScoped<ITenantContext>(sp => sp.GetRequiredService<AmbientTenantContext>());
         services.AddScoped<IWorkOrderNumberAllocator, WorkOrderNumberAllocator>();
         services.AddDbContext<PymenDbContext>(options =>
-            options.UseSqlServer(sql.GetConnectionString()));
+            options.UseSqlServer(_sql.ConnectionString));
 
         await using var provider = services.BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();
