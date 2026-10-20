@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Time.Testing;
 using Pymen.Domain.Catalog;
 using Pymen.Domain.Common;
 using Pymen.Domain.Inventory;
@@ -8,6 +9,8 @@ namespace Pymen.Domain.Tests.Production;
 
 public class ProductionReceiptAndDeliveryTests
 {
+    private static readonly FakeTimeProvider Time = new(new DateTimeOffset(2026, 10, 19, 12, 0, 0, TimeSpan.Zero));
+
     [Fact]
     public void ProductionReceipt_moves_stock_using_BOM()
     {
@@ -20,7 +23,7 @@ public class ProductionReceiptAndDeliveryTests
         var finishedStock = StockBalance.Create(tenantId, finishedId, warehouseId, 0);
         var rawStock = StockBalance.Create(tenantId, rawId, warehouseId, 100);
 
-        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, quantity: 5);
+        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, quantity: 5, Time);
 
         receipt.Apply(
             finishedStock,
@@ -30,6 +33,7 @@ public class ProductionReceiptAndDeliveryTests
         finishedStock.Quantity.Should().Be(5);
         rawStock.Quantity.Should().Be(90);
         receipt.IsApplied.Should().BeTrue();
+        receipt.ReceivedAt.Should().Be(Time.GetUtcNow());
     }
 
     [Fact]
@@ -39,7 +43,7 @@ public class ProductionReceiptAndDeliveryTests
         var warehouseId = Guid.NewGuid();
         var finishedId = Guid.NewGuid();
         var finishedStock = StockBalance.Create(tenantId, finishedId, warehouseId, 0);
-        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, 1);
+        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, 1, Time);
 
         receipt.Apply(finishedStock, [], new Dictionary<Guid, StockBalance>());
 
@@ -56,10 +60,11 @@ public class ProductionReceiptAndDeliveryTests
         var warehouseId = Guid.NewGuid();
         var stock = StockBalance.Create(tenantId, productId, warehouseId, 50);
 
-        var note = DeliveryNote.Create(tenantId, Guid.NewGuid(), "DN-0001");
+        var note = DeliveryNote.Create(tenantId, Guid.NewGuid(), "DN-0001", Time);
         note.AddLine(productId, 10);
 
         note.Lines.Should().HaveCount(1);
+        note.DeliveredAt.Should().Be(Time.GetUtcNow());
         stock.Quantity.Should().Be(50);
     }
 
@@ -73,7 +78,7 @@ public class ProductionReceiptAndDeliveryTests
         var bom = BillOfMaterialsLine.Create(tenantId, finishedId, rawId, 10m);
         var finishedStock = StockBalance.Create(tenantId, finishedId, warehouseId, 0);
         var rawStock = StockBalance.Create(tenantId, rawId, warehouseId, 5);
-        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, 1);
+        var receipt = ProductionReceipt.Create(tenantId, finishedId, warehouseId, 1, Time);
 
         var act = () => receipt.Apply(
             finishedStock,

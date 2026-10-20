@@ -59,6 +59,7 @@ Detalle técnico: ver ADR `docs/adr/0002-multi-tenant-base-compartida.md`.
 5. Alcance de FEAFIPLib (fase fiscal posterior).
 6. Inventario fino de reportes Crystal activos vs copias muertas.
 7. Estados detallados de `Recepcion` y facturas fuera del flujo OT MVP.
+8. ¿Se puede marcar una OT como entregada con operaciones sin terminar? (No implementar regla hasta responder.)
 
 ---
 

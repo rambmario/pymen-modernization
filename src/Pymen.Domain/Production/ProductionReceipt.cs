@@ -27,9 +27,11 @@ public sealed class ProductionReceipt : Entity, ITenantOwned
         Guid productId,
         Guid warehouseId,
         decimal quantity,
-        Guid? workOrderId = null,
-        DateTimeOffset? receivedAt = null)
+        TimeProvider timeProvider,
+        Guid? workOrderId = null)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (tenantId == Guid.Empty)
         {
             throw new DomainException("TenantId is required.");
@@ -52,7 +54,7 @@ public sealed class ProductionReceipt : Entity, ITenantOwned
             WarehouseId = warehouseId,
             WorkOrderId = workOrderId,
             Quantity = quantity,
-            ReceivedAt = receivedAt ?? DateTimeOffset.UtcNow,
+            ReceivedAt = timeProvider.GetUtcNow(),
             IsApplied = false
         };
     }

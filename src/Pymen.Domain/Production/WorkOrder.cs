@@ -26,9 +26,10 @@ public sealed class WorkOrder : Entity, ITenantOwned
     {
     }
 
-    public static WorkOrder Create(Tenant tenant, Guid customerId, string? notes = null)
+    public static WorkOrder Create(Tenant tenant, Guid customerId, TimeProvider timeProvider, string? notes = null)
     {
         ArgumentNullException.ThrowIfNull(tenant);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         if (customerId == Guid.Empty)
         {
@@ -43,7 +44,7 @@ public sealed class WorkOrder : Entity, ITenantOwned
             CustomerId = customerId,
             Number = number,
             Status = WorkOrderStatus.Draft,
-            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedAt = timeProvider.GetUtcNow(),
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         };
     }
@@ -72,8 +73,9 @@ public sealed class WorkOrder : Entity, ITenantOwned
         return operation;
     }
 
-    public void StartProduction(DateTimeOffset? at = null)
+    public void StartProduction(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
         EnsureTransition(WorkOrderStatus.Draft, WorkOrderStatus.InProduction);
         if (_lines.Count == 0)
         {
@@ -81,32 +83,44 @@ public sealed class WorkOrder : Entity, ITenantOwned
         }
 
         Status = WorkOrderStatus.InProduction;
-        StartedAt = at ?? DateTimeOffset.UtcNow;
+        StartedAt = timeProvider.GetUtcNow();
     }
 
-    public void MarkDelivered(DateTimeOffset? at = null)
+    public void MarkDelivered(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
         EnsureTransition(WorkOrderStatus.InProduction, WorkOrderStatus.Delivered);
         Status = WorkOrderStatus.Delivered;
-        DeliveredAt = at ?? DateTimeOffset.UtcNow;
+        DeliveredAt = timeProvider.GetUtcNow();
     }
 
-    public void MarkInvoiced(DateTimeOffset? at = null)
+    public void MarkInvoiced(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
         EnsureTransition(WorkOrderStatus.Delivered, WorkOrderStatus.Invoiced);
         Status = WorkOrderStatus.Invoiced;
-        InvoicedAt = at ?? DateTimeOffset.UtcNow;
+        InvoicedAt = timeProvider.GetUtcNow();
     }
 
-    public void Cancel(DateTimeOffset? at = null)
+    public void Cancel(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (Status is not (WorkOrderStatus.Draft or WorkOrderStatus.InProduction))
         {
             throw new DomainException($"Cannot cancel work order from status {Status}.");
         }
 
+        foreach (var operation in _operations)
+        {
+            if (operation.Status is WorkOrderOperationStatus.Pending or WorkOrderOperationStatus.Started)
+            {
+                operation.Cancel();
+            }
+        }
+
         Status = WorkOrderStatus.Cancelled;
-        CancelledAt = at ?? DateTimeOffset.UtcNow;
+        CancelledAt = timeProvider.GetUtcNow();
     }
 
     private void EnsureEditable()

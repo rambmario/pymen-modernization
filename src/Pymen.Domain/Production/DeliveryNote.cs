@@ -25,9 +25,11 @@ public sealed class DeliveryNote : Entity, ITenantOwned
         Guid tenantId,
         Guid workOrderId,
         string number,
-        DateTimeOffset? deliveredAt = null,
+        TimeProvider timeProvider,
         string? notes = null)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (tenantId == Guid.Empty)
         {
             throw new DomainException("TenantId is required.");
@@ -48,7 +50,7 @@ public sealed class DeliveryNote : Entity, ITenantOwned
             TenantId = tenantId,
             WorkOrderId = workOrderId,
             Number = number.Trim(),
-            DeliveredAt = deliveredAt ?? DateTimeOffset.UtcNow,
+            DeliveredAt = timeProvider.GetUtcNow(),
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         };
     }

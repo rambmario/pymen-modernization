@@ -227,3 +227,26 @@ Implementar el dominio mínimo del núcleo de producción con estados validados,
 ### Próximo paso
 
 Paso 3 — EF Core, filtro TenantId, docker-compose, seed. Esperar OK.
+
+---
+
+## 2026-10-19 — refactor(domain): TimeProvider, cancel ops, Guid v7
+
+**Hora (aprox.):** 21:22 (UTC-3)
+
+### Objetivo
+
+Ajustes de dominio pedidos antes del Paso 3.
+
+### Qué se hizo
+
+- `Guid.CreateVersion7()` en `Entity`.
+- `WorkOrder.Cancel` cancela operaciones Pending/Started.
+- Fechas vía `TimeProvider`; tests con `FakeTimeProvider`.
+- Props duplicadas quitadas de los `.csproj`.
+- Pregunta abierta en `owner-decisions.md` sobre entregar OT con operaciones abiertas.
+- Tests nuevos de cancelación en cascada y timestamps.
+
+### Próximo paso
+
+Paso 3 (persistencia).

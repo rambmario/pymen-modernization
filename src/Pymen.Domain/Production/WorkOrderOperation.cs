@@ -36,18 +36,20 @@ public sealed class WorkOrderOperation : Entity, ITenantOwned
         };
     }
 
-    public void Start(DateTimeOffset? at = null)
+    public void Start(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
         EnsureTransition(WorkOrderOperationStatus.Pending, WorkOrderOperationStatus.Started);
         Status = WorkOrderOperationStatus.Started;
-        StartedAt = at ?? DateTimeOffset.UtcNow;
+        StartedAt = timeProvider.GetUtcNow();
     }
 
-    public void Finish(DateTimeOffset? at = null)
+    public void Finish(TimeProvider timeProvider)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
         EnsureTransition(WorkOrderOperationStatus.Started, WorkOrderOperationStatus.Finished);
         Status = WorkOrderOperationStatus.Finished;
-        FinishedAt = at ?? DateTimeOffset.UtcNow;
+        FinishedAt = timeProvider.GetUtcNow();
     }
 
     public void Cancel()

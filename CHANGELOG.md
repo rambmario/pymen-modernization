@@ -28,3 +28,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - `Directory.Build.props`, `.editorconfig`, `global.json`, `nuget.config`.
 - ADR 0003: solution structure.
 - Domain model for production core (work orders, operations, BOM, stock, delivery notes) with unit tests.
+
+### Changed
+
+- Domain uses `TimeProvider` for timestamps, UUID v7 ids, and cascade-cancels open operations when a work order is cancelled.
