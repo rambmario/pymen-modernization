@@ -88,20 +88,6 @@ public static class WorkOrderEndpoints
             .RequireAuthorization(policy => policy.RequireRole(AppRoles.Admin, AppRoles.Planner))
             .AddEndpointFilter<ValidationFilter<UpdateWorkOrderRequest>>();
 
-        group.MapDelete("/{id:guid}", async (Guid id, PymenDbContext db, TimeProvider time, CancellationToken ct) =>
-            {
-                var workOrder = await Query(db).FirstOrDefaultAsync(w => w.Id == id, ct);
-                if (workOrder is null)
-                {
-                    return Results.NotFound();
-                }
-
-                workOrder.Cancel(time);
-                await db.SaveChangesAsync(ct);
-                return Results.NoContent();
-            })
-            .RequireAuthorization(policy => policy.RequireRole(AppRoles.Admin, AppRoles.Planner));
-
         group.MapPost("/{id:guid}/start", async (Guid id, PymenDbContext db, TimeProvider time, CancellationToken ct) =>
             {
                 var workOrder = await Query(db).FirstOrDefaultAsync(w => w.Id == id, ct);

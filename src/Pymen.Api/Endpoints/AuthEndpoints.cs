@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using Pymen.Api.Filters;
 using Pymen.Application.Auth;
 
@@ -17,6 +18,7 @@ public static class AuthEndpoints
                     : Results.Ok(response);
             })
             .AllowAnonymous()
+            .RequireRateLimiting("auth-login")
             .AddEndpointFilter<ValidationFilter<LoginRequest>>()
             .WithName("Login");
 

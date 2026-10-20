@@ -46,7 +46,9 @@ public sealed class PymenApiFactory : WebApplicationFactory<Program>, IAsyncLife
             {
                 ["ConnectionStrings:Pymen"] = _connectionString,
                 ["Jwt:SigningKey"] = "TEST_ONLY_signing_key_32chars_min!!",
-                ["SkipSeed"] = "false"
+                ["SkipSeed"] = "false",
+                ["Seed:Enabled"] = "true",
+                ["EnableAuthProbe"] = "true"
             });
         });
     }

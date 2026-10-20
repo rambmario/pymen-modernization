@@ -1,4 +1,6 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.RateLimiting;
 using Pymen.Api.Endpoints;
 using Pymen.Api.Middleware;
 using Pymen.Application;
@@ -20,6 +22,21 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<PymenDbContext>("database", tags: ["ready"]);
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth-login", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -30,13 +47,17 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue("EnableOpenApi
     app.MapScalarApiReference();
 }
 
-if (!app.Configuration.GetValue("SkipSeed", false))
+var seedEnabled = app.Configuration.GetValue("Seed:Enabled", false)
+    || (app.Environment.IsDevelopment() && !app.Configuration.GetValue("SkipSeed", false));
+
+if (seedEnabled)
 {
     await DemoDataSeeder.SeedAsync(app.Services);
     await DemoUserSeeder.SeedAsync(app.Services);
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<TenantContextMiddleware>();
 app.UseAuthorization();
@@ -50,6 +71,12 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
 }).AllowAnonymous();
+
+if (app.Configuration.GetValue("EnableAuthProbe", false))
+{
+    // Protected only by FallbackPolicy (no explicit attributes) — used by auth integration tests.
+    app.MapGet("/api/__probe/auth-required", () => Results.Ok(new { ok = true }));
+}
 
 app.MapAuthEndpoints();
 app.MapCustomerEndpoints();

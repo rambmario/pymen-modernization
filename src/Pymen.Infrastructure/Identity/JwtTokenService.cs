@@ -18,12 +18,6 @@ public sealed class JwtTokenService
 
     public (string Token, DateTimeOffset ExpiresAt) CreateToken(ApplicationUser user, IEnumerable<string> roles)
     {
-        if (string.IsNullOrWhiteSpace(_options.SigningKey) || _options.SigningKey.Length < 32)
-        {
-            throw new InvalidOperationException(
-                "Jwt:SigningKey must be configured (min 32 chars). Set JWT_SIGNING_KEY in .env or user-secrets.");
-        }
-
         var expiresAt = DateTimeOffset.UtcNow.AddMinutes(_options.ExpirationMinutes);
         var claims = new List<Claim>
         {

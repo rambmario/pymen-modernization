@@ -55,3 +55,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - Tenant middleware from JWT `tenant_id` claim; Minimal API endpoints for auth, customers, products, work-orders, operations, delivery-notes.
 - FluentValidation (400), DomainException ProblemDetails (422), concurrency (409); OpenAPI + Scalar.
 - Integration tests: login, full work-order flow, cross-tenant 404, Operator cancel 403.
+
+### Fixed
+
+- JWT signing key required at startup (`ValidateOnStart`, no fallback); FallbackPolicy requires auth; login rate-limited (429); demo seed gated to Development / `Seed:Enabled`; removed DELETE work-order (cancel via POST only).

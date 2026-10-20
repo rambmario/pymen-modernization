@@ -1,9 +1,11 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Pymen.Application.Abstractions;
 using Pymen.Application.Auth;
@@ -42,24 +44,21 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<PymenDbContext>()
             .AddDefaultTokenProviders();
 
-        var jwtSection = configuration.GetSection(JwtOptions.SectionName);
-        services.Configure<JwtOptions>(options =>
-        {
-            jwtSection.Bind(options);
-            var envKey = Environment.GetEnvironmentVariable("JWT_SIGNING_KEY");
-            if (!string.IsNullOrWhiteSpace(envKey))
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .PostConfigure(options =>
             {
-                options.SigningKey = envKey;
-            }
-        });
-
-        var jwtOptions = new JwtOptions();
-        jwtSection.Bind(jwtOptions);
-        var signingKey = Environment.GetEnvironmentVariable("JWT_SIGNING_KEY");
-        if (!string.IsNullOrWhiteSpace(signingKey))
-        {
-            jwtOptions.SigningKey = signingKey;
-        }
+                var envKey = Environment.GetEnvironmentVariable("JWT_SIGNING_KEY");
+                if (!string.IsNullOrWhiteSpace(envKey))
+                {
+                    options.SigningKey = envKey;
+                }
+            })
+            .ValidateDataAnnotations()
+            .Validate(
+                o => !string.IsNullOrWhiteSpace(o.SigningKey) && o.SigningKey.Length >= 32,
+                "Jwt:SigningKey must be configured with at least 32 characters (set Jwt:SigningKey or JWT_SIGNING_KEY).")
+            .ValidateOnStart();
 
         services
             .AddAuthentication(options =>
@@ -67,27 +66,32 @@ public static class DependencyInjection
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options =>
+            .AddJwtBearer();
+
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IOptions<JwtOptions>>((bearer, jwtAccessor) =>
             {
-                options.TokenValidationParameters = new TokenValidationParameters
+                var jwt = jwtAccessor.Value;
+                bearer.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidAudience = jwtOptions.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(
-                            string.IsNullOrWhiteSpace(jwtOptions.SigningKey)
-                                ? new string('x', 32)
-                                : jwtOptions.SigningKey)),
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)),
                     RoleClaimType = System.Security.Claims.ClaimTypes.Role,
                     NameClaimType = System.Security.Claims.ClaimTypes.NameIdentifier
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options =>
+        {
+            options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+        });
 
         return services;
     }
