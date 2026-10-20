@@ -11,9 +11,9 @@ Modernization of a 20-year-old VB.NET WinForms ERP for manufacturing SMEs into a
 
 ## Context
 
-Pymen is a portfolio rebuild of a real-world manufacturing ERP that grew for ~20 years as a **VB.NET WinForms** desktop app on **.NET Framework 3.5**, with **SQL Server**, **Crystal Reports**, roughly **312k LOC**, **~876 forms**, and **~1,400 stored procedures**. The legacy system is treated as **read-only** analysis input; this repository holds only the greenfield stack.
+Pymen is a manufacturing ERP I designed and maintained for ~10 years as founder of Ingesoft, used in production by SMEs. It was built as a **VB.NET WinForms** desktop app on **.NET Framework 3.5**, with **SQL Server**, **Crystal Reports**, roughly **312k LOC**, **~876 forms**, and **~1,400 stored procedures**. The legacy system is treated as **read-only** analysis input; this repository holds only the greenfield stack.
 
-The goal is not a big-bang rewrite. The project follows a **[strangler fig](docs/adr/0001-estrategia-de-modernizacion.md)** strategy: ship a clean vertical slice (auth, tenancy, work orders) that can grow module by module while the old system remains the source of truth for out-of-scope areas. Client names, tax IDs, and production credentials never enter this repo.
+The goal is not a big-bang rewrite. The project follows a **[strangler fig](docs/adr/0001-estrategia-de-modernizacion.md)** strategy: ship a clean vertical slice (auth, tenancy, work orders) that can grow module by module while the legacy system keeps running. Client names, tax IDs, and production credentials never enter this repo.
 
 ---
 
@@ -133,7 +133,7 @@ Operator can list/get work orders and drive shop-floor operations only. Admin/Pl
 
 ## Testing
 
-| Project | Tests (approx.) | Notes |
+| Project | Tests | Notes |
 |---------|-----------------|--------|
 | `Pymen.Domain.Tests` | 26 | Pure domain unit tests |
 | `Pymen.Application.Tests` | 7 | Services + InMemory EF |
@@ -152,9 +152,10 @@ CI runs both jobs on every push/PR to `main`: [workflow](https://github.com/ramb
 
 ---
 
+<!-- Screenshots: uncomment when docs/images/{login,work-order-list,work-order-detail}.png exist
 ## Screenshots
 
-> **Placeholders** — add real captures under [`docs/images/`](docs/images/) (see that folder’s README for framing tips).
+> Add captures under [`docs/images/`](docs/images/) (see that folder’s README for framing tips).
 
 | Screen | Image |
 |--------|--------|
@@ -163,6 +164,7 @@ CI runs both jobs on every push/PR to `main`: [workflow](https://github.com/ramb
 | Work-order detail | ![Work-order detail](docs/images/work-order-detail.png) |
 
 ---
+-->
 
 ## AI-assisted development
 
