@@ -24,3 +24,6 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 - `docs/legacy/owner-decisions.md` (owner confirmations for Phase 1).
 - ADR 0002: shared-database multi-tenant with `TenantId`.
+- .NET 10 Clean Architecture solution (`Pymen.sln`, `src/*`, `tests/*`).
+- `Directory.Build.props`, `.editorconfig`, `global.json`, `nuget.config`.
+- ADR 0003: solution structure.

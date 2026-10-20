@@ -162,3 +162,37 @@ Consolidar el historial git en un único commit limpio antes del primer push (Fa
 ### Próximo paso
 
 Fase 1 / Paso 1: solución .NET 10 Clean Architecture en `src/` (esperar OK).
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 1: solución .NET 10
+
+**Hora (aprox.):** 20:57 (UTC-3)
+
+### Objetivo de la sesión
+
+Crear la solución Clean Architecture (.NET 10) con proyectos, props compartidos, tests smoke y ADR de estructura.
+
+### Qué se hizo
+
+- `Pymen.sln` con `src/Pymen.{Domain,Application,Infrastructure,Api}` y `tests/Pymen.{Domain.Tests,Api.IntegrationTests}`.
+- Referencias Clean Architecture; FluentAssertions + Mvc.Testing.
+- `Directory.Build.props`, `.editorconfig`, `global.json`, `nuget.config` (solo nuget.org).
+- ADR `docs/adr/0003-estructura-de-solucion.md`.
+- Smoke tests: dominio + `/health` vía `WebApplicationFactory`.
+- `dotnet build` / `dotnet test` en verde.
+
+### Decisiones tomadas y por qué
+
+- Formato `.sln` clásico (no `.slnx` por defecto del SDK 10) por compatibilidad.
+- `nuget.config` local con nuget.org para no depender de un feed privado inaccesible.
+- `TreatWarningsAsErrors` desde el inicio.
+
+### Problemas encontrados y cómo se resolvieron
+
+- `dotnet new sln` creó `.slnx` vacío; se regeneró con `--format sln`.
+- Feed NuGet privado timeout: aislado con `nuget.config` del repo.
+
+### Próximo paso
+
+Paso 2 — dominio (entidades, estados OT, tests unitarios). Esperar OK.
