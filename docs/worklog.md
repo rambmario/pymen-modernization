@@ -510,3 +510,24 @@ Capturas reales para el README (login, lista OT, detalle) + script reproducible 
 ### Próximo paso
 
 Esperar OK (cierre Fase 1 / arranque Fase 2).
+
+---
+
+## 2026-10-20 — Front: locale es-AR, paginator ES, formato OT
+
+**Hora (aprox.):** 15:27 (UTC-3)
+
+### Objetivo
+
+Ajustes de presentación del SPA: fechas/locale AR, paginator en español, número de OT con guión.
+
+### Qué se hizo
+
+- `LOCALE_ID` / `MAT_DATE_LOCALE` = `es-AR` + `registerLocaleData`; fechas `dd/MM/yyyy HH:mm`.
+- `SpanishPaginatorIntl` (“Ítems por página”, “1 – 3 de 3”).
+- Pipe `workOrderNumber`: `000100000002` → `0001-00000002` (solo display).
+- Tests (17) + regeneración de screenshots README.
+
+### Próximo paso
+
+Esperar OK.

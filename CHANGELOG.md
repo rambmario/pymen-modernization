@@ -83,3 +83,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Added
 
 - README screenshots (`docs/images/*.png`) and Playwright regen script (`web`: `npm run screenshots`).
+- SPA locale `es-AR`, Spanish `MatPaginatorIntl`, and `workOrderNumber` display pipe (`0001-00000002`).
+
+### Changed
+
+- Work-order list/detail timestamps use `dd/MM/yyyy HH:mm`.

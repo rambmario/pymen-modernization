@@ -5,7 +5,7 @@
 } @else if (workOrder(); as wo) {
   <section class="page-header">
     <div>
-      <h1>OT {{ wo.number }}</h1>
+      <h1>OT {{ wo.number | workOrderNumber }}</h1>
       <p class="meta">Estado: {{ statusLabel(wo.status) }}</p>
     </div>
     <div class="actions">
@@ -31,18 +31,18 @@
   <mat-card>
     <mat-card-content>
       <p><strong>Notas:</strong> {{ wo.notes || '—' }}</p>
-      <p><strong>Creada:</strong> {{ wo.createdAt | date: 'short' }}</p>
+      <p><strong>Creada:</strong> {{ wo.createdAt | date: dateTime }}</p>
       @if (wo.startedAt) {
-        <p><strong>Iniciada:</strong> {{ wo.startedAt | date: 'short' }}</p>
+        <p><strong>Iniciada:</strong> {{ wo.startedAt | date: dateTime }}</p>
       }
       @if (wo.deliveredAt) {
-        <p><strong>Entregada:</strong> {{ wo.deliveredAt | date: 'short' }}</p>
+        <p><strong>Entregada:</strong> {{ wo.deliveredAt | date: dateTime }}</p>
       }
       @if (wo.invoicedAt) {
-        <p><strong>Facturada:</strong> {{ wo.invoicedAt | date: 'short' }}</p>
+        <p><strong>Facturada:</strong> {{ wo.invoicedAt | date: dateTime }}</p>
       }
       @if (wo.cancelledAt) {
-        <p><strong>Cancelada:</strong> {{ wo.cancelledAt | date: 'short' }}</p>
+        <p><strong>Cancelada:</strong> {{ wo.cancelledAt | date: dateTime }}</p>
       }
     </mat-card-content>
   </mat-card>
@@ -77,11 +77,11 @@
     </ng-container>
     <ng-container matColumnDef="startedAt">
       <th mat-header-cell *matHeaderCellDef>Inicio</th>
-      <td mat-cell *matCellDef="let row">{{ row.startedAt ? (row.startedAt | date: 'short') : '—' }}</td>
+      <td mat-cell *matCellDef="let row">{{ row.startedAt ? (row.startedAt | date: dateTime) : '—' }}</td>
     </ng-container>
     <ng-container matColumnDef="finishedAt">
       <th mat-header-cell *matHeaderCellDef>Fin</th>
-      <td mat-cell *matCellDef="let row">{{ row.finishedAt ? (row.finishedAt | date: 'short') : '—' }}</td>
+      <td mat-cell *matCellDef="let row">{{ row.finishedAt ? (row.finishedAt | date: dateTime) : '—' }}</td>
     </ng-container>
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Acciones</th>

@@ -15,12 +15,15 @@ import { WORK_ORDER_STATUSES, workOrderStatusLabel } from '../../core/api/labels
 import { CustomerResponse, WorkOrderResponse } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { CatalogService } from '../../core/catalog/catalog.service';
+import { PYMEN_DATE_TIME } from '../../core/i18n/date-formats';
+import { WorkOrderNumberPipe } from '../../core/i18n/work-order-number.pipe';
 import { WorkOrderService } from '../../core/work-orders/work-order.service';
 
 @Component({
   selector: 'app-work-order-list',
   imports: [
     DatePipe,
+    WorkOrderNumberPipe,
     ReactiveFormsModule,
     RouterLink,
     MatTableModule,
@@ -56,6 +59,7 @@ export class WorkOrderListComponent implements OnInit {
   readonly statuses = WORK_ORDER_STATUSES;
   readonly columns = ['number', 'customer', 'status', 'createdAt', 'actions'];
   readonly statusLabel = workOrderStatusLabel;
+  readonly dateTime = PYMEN_DATE_TIME;
 
   ngOnInit(): void {
     this.filters.valueChanges

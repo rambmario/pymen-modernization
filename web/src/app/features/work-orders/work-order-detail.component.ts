@@ -17,12 +17,15 @@ import {
 } from '../../core/api/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { CatalogService } from '../../core/catalog/catalog.service';
+import { PYMEN_DATE_TIME } from '../../core/i18n/date-formats';
+import { WorkOrderNumberPipe } from '../../core/i18n/work-order-number.pipe';
 import { WorkOrderService } from '../../core/work-orders/work-order.service';
 
 @Component({
   selector: 'app-work-order-detail',
   imports: [
     DatePipe,
+    WorkOrderNumberPipe,
     RouterLink,
     MatCardModule,
     MatButtonModule,
@@ -38,6 +41,7 @@ export class WorkOrderDetailComponent implements OnInit {
   private readonly apiErrors = inject(ApiErrorService);
   private readonly destroyRef = inject(DestroyRef);
   readonly auth = inject(AuthService);
+  readonly dateTime = PYMEN_DATE_TIME;
 
   /** Bound from route param `:id` via `withComponentInputBinding()`. */
   readonly id = input.required<string>();
