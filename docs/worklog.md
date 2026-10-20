@@ -196,3 +196,34 @@ Crear la solución Clean Architecture (.NET 10) con proyectos, props compartidos
 ### Próximo paso
 
 Paso 2 — dominio (entidades, estados OT, tests unitarios). Esperar OK.
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 2: dominio
+
+**Hora (aprox.):** 21:17 (UTC-3)
+
+### Objetivo de la sesión
+
+Implementar el dominio mínimo del núcleo de producción con estados validados, numeración por tenant y tests unitarios.
+
+### Qué se hizo
+
+- Entidades: `Tenant`, `Customer`, `Product`, `BillOfMaterialsLine`, `Warehouse`, `StockBalance`, `WorkOrder`, `WorkOrderLine`, `WorkOrderOperation`, `OperationType`, `DeliveryNote`, `DeliveryNoteLine`, `ProductionReceipt`.
+- `ITenantOwned` en entidades de negocio; `DomainException` para reglas.
+- Máquina de estados OT y operaciones; numeración POS+secuencia en `Tenant.AllocateWorkOrderNumber`.
+- Remito solo documenta; `ProductionReceipt.Apply` mueve stock vía BOM.
+- 24 tests unitarios en verde.
+
+### Decisiones tomadas y por qué
+
+- `Tenant` no implementa `ITenantOwned` (es la raíz de tenancy; su `Id` es el `TenantId` de los demás).
+- Cancelación de OT solo desde `Draft`/`InProduction`; operaciones cancelables desde `Pending`/`Started`.
+
+### Problemas encontrados y cómo se resolvieron
+
+- Ninguno bloqueante.
+
+### Próximo paso
+
+Paso 3 — EF Core, filtro TenantId, docker-compose, seed. Esperar OK.

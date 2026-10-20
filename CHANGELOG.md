@@ -27,3 +27,4 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 - .NET 10 Clean Architecture solution (`Pymen.sln`, `src/*`, `tests/*`).
 - `Directory.Build.props`, `.editorconfig`, `global.json`, `nuget.config`.
 - ADR 0003: solution structure.
+- Domain model for production core (work orders, operations, BOM, stock, delivery notes) with unit tests.

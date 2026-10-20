@@ -111,3 +111,23 @@ Crear solución .NET 10 Clean Architecture (proyectos, props, editorconfig, glob
 ### Tiempo estimado ahorrado
 
 ~1–1.5 h de armado manual de solución y pelea con NuGet/sln.
+
+---
+
+## 2026-10-19 — Fase 1 / Paso 2
+
+### Pedido principal
+
+Dominio: entidades, ITenantOwned, estados OT/operaciones, numeración, remito sin stock, ProductionReceipt con stock, tests unitarios.
+
+### Qué generó la IA
+
+- Código de dominio completo + suite de tests (24) + registro/CHANGELOG/commit.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente revisión de transiciones y fórmula BOM vs legacy.
+
+### Tiempo estimado ahorrado
+
+~2–3 h de modelado y tests de máquina de estados.
