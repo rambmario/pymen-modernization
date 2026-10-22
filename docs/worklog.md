@@ -554,3 +554,33 @@ Cerrar la pregunta 8 de `owner-decisions` (¿OT entregada con operaciones sin te
 ### Próximo paso
 
 ADRs 0009/0010 y diagrama de arquitectura cloud (mismo Paso 0).
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 0: ADRs cloud + Outbox + diagrama
+
+**Hora (aprox.):** 18:05 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Plan y decisiones de arquitectura para Cloud & Async (sin provisionar Azure todavía).
+
+### Qué se hizo
+
+- `docs/adr/0009-arquitectura-cloud-azure.md`: Container Apps, Static Web Apps, SQL serverless, Service Bus, Blob, Key Vault, App Insights; alternativas y costo estimado ~$0–25/mes.
+- `docs/adr/0010-mensajeria-async-outbox.md`: Outbox transaccional vs publish directo.
+- `docs/architecture-cloud.md`: Mermaid (vista lógica + secuencia entrega → PDF).
+- Commit previo aparte: decisión owner #6 + test de dominio.
+
+### Decisiones
+
+- Azure con tiers free/consumo; Managed Identity; no AKS.
+- Outbox obligatorio para eventos de dominio hacia Service Bus.
+
+### Problemas encontrados
+
+- Ninguno (solo documentación). Provisioning queda para Pasos 4–5 con acción manual de Mario.
+
+### Próximo paso
+
+Esperar OK → Paso 1 (Dockerfiles + docker-compose completo).

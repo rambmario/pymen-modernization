@@ -9,6 +9,10 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
+- Owner decision: work orders may be delivered with unfinished operations (Pending/Started); domain test documents current behavior.
+- ADR 0009: Azure cloud architecture (Container Apps, Static Web Apps, SQL serverless, Service Bus, Blob, Key Vault, App Insights) with cost estimate.
+- ADR 0010: async messaging via transactional Outbox (not direct publish from HTTP).
+- Target cloud architecture Mermaid diagrams (`docs/architecture-cloud.md`).
 - Recruiter-oriented English README (architecture Mermaid, ADRs, getting started, testing, screenshots placeholders); MIT LICENSE.
 - Repository scaffolding: CHANGELOG, `.gitignore`, `docs/worklog.md`, `docs/ai-usage.md`, `docs/adr/`, `docs/legacy/`.
 - Legacy system analysis (`docs/legacy/legacy-analysis.md`).

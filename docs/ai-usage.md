@@ -291,3 +291,26 @@ OK Paso 6 → README recruiter/técnico EN, LICENSE MIT, placeholders screenshot
 ### Tiempo estimado ahorrado
 
 ~1–1.5 h.
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 0
+
+### Pedido principal
+
+Arrancar Fase 2 Cloud & Async: cerrar pregunta 8 (OT entregada con ops incompletas), ADR 0009/0010, diagrama Mermaid; commits por paso y push; no provisionar Azure ni secretos.
+
+### Qué generó la IA
+
+- Cierre de decisión en `owner-decisions.md` + test de dominio `MarkDelivered` con ops Pending/Started.
+- ADR 0009 (cloud Azure + costos), ADR 0010 (Outbox), `docs/architecture-cloud.md`.
+- Entradas worklog / ai-usage / CHANGELOG.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano antes del Paso 1 (contenedores).
+- Provisioning Azure y login quedan a cargo de Mario (no ejecutados).
+
+### Tiempo estimado ahorrado
+
+~1.5–2 h.
