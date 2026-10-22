@@ -21,7 +21,7 @@ Desplegar Pymen en Azure con estos recursos:
 | **Azure Container Apps** | API (`Pymen.Api`) y worker (`Pymen.Worker`) | Consumption; scale-to-zero cuando sea posible |
 | **Azure Static Web Apps** | SPA Angular | Free |
 | **Azure SQL Database** | Persistencia EF Core | Serverless (GP serverless) o free offer si aplica; **auto-pause** |
-| **Azure Service Bus** | Cola de eventos de dominio | Basic o Standard consumo (cola única MVP) |
+| **Azure Service Bus** | Cola de eventos de dominio | **Basic** (cola única MVP; sin duplicate detection del broker — ver ADR 0010). Standard solo si hace falta topics / duplicate detection |
 | **Azure Blob Storage** | PDFs de remito por tenant | StorageV2 / Hot; acceso vía Managed Identity + SAS cortas |
 | **Azure Key Vault** | Secretos residuales (si hace falta) | Standard; preferir Managed Identity sobre secretos |
 | **Application Insights** + Log Analytics | Trazas, métricas, logs | Workspace-based; retención corta |

@@ -35,6 +35,7 @@ No se publica al bus desde el handler HTTP antes del commit.
 ## Consecuencias
 
 - Consistencia at-least-once hacia el bus; consumidores deben ser **idempotentes**.
+- Con **Service Bus Basic** el broker **no** ofrece duplicate detection: la idempotencia la garantiza el **consumidor** (registro de `MessageId` ya procesados). **Standard** solo si más adelante se necesitan topics o duplicate detection en el broker.
 - Latency eventual: el PDF no está listo en la respuesta de `MarkDelivered`; la UI descarga cuando exista (o reintenta).
 - Misma unidad de persistencia (SQL) para negocio + outbox → no hace falta 2PC.
 - Tests: verificar inserción outbox en la misma transacción y que el publisher no publique dos veces el mismo `MessageId`.
