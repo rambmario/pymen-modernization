@@ -531,3 +531,26 @@ Ajustes de presentación del SPA: fechas/locale AR, paginator en español, núme
 ### Próximo paso
 
 Esperar OK.
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 0: decisión OT entregada con ops incompletas
+
+**Hora (aprox.):** 17:55 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Cerrar la pregunta 8 de `owner-decisions` (¿OT entregada con operaciones sin terminar?) sin cambiar la lógica de dominio.
+
+### Qué se hizo
+
+- `docs/legacy/owner-decisions.md`: decisión 6 cerrada (sí se puede); pregunta 8 eliminada de abiertas.
+- Test de dominio `MarkDelivered_with_pending_or_started_operations_succeeds_and_leaves_operations_unchanged` (operaciones quedan Pending/Started).
+
+### Decisiones
+
+- No endurecer `MarkDelivered`: el comportamiento actual ya refleja la regla de negocio confirmada.
+
+### Próximo paso
+
+ADRs 0009/0010 y diagrama de arquitectura cloud (mismo Paso 0).

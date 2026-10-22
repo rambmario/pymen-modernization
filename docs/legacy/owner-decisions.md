@@ -46,6 +46,13 @@ Versiones **canónicas** a analizar y migrar:
 
 Detalle técnico: ver ADR `docs/adr/0002-multi-tenant-base-compartida.md`.
 
+### 6. Entrega de OT con operaciones incompletas
+
+- **Sí** se puede marcar una OT como **entregada** aunque queden operaciones en `Pending` o `Started`.
+- Confirmado por el dueño (Fase 2 / Paso 0).
+- El dominio actual (`WorkOrder.MarkDelivered`) ya lo permite: solo exige transición `InProduction` → `Delivered`; **no** exige operaciones `Finished`.
+- No se cambia la lógica; se documenta con un test de dominio que fija el comportamiento.
+
 ---
 
 ## Preguntas que siguen abiertas
@@ -59,7 +66,6 @@ Detalle técnico: ver ADR `docs/adr/0002-multi-tenant-base-compartida.md`.
 5. Alcance de FEAFIPLib (fase fiscal posterior).
 6. Inventario fino de reportes Crystal activos vs copias muertas.
 7. Estados detallados de `Recepcion` y facturas fuera del flujo OT MVP.
-8. ¿Se puede marcar una OT como entregada con operaciones sin terminar? (No implementar regla hasta responder.)
 
 ---
 

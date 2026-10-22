@@ -149,6 +149,26 @@ public class WorkOrderTests
         act.Should().Throw<DomainException>();
     }
 
+    /// <summary>
+    /// Owner decision #6: delivery is allowed with unfinished operations (Pending/Started).
+    /// Operations keep their status; MarkDelivered does not cancel or finish them.
+    /// </summary>
+    [Fact]
+    public void MarkDelivered_with_pending_or_started_operations_succeeds_and_leaves_operations_unchanged()
+    {
+        var (_, order) = CreateDraftWithLine();
+        var pending = order.AddOperation(Guid.NewGuid());
+        var started = order.AddOperation(Guid.NewGuid());
+        started.Start(Time);
+
+        order.StartProduction(Time);
+        order.MarkDelivered(Time);
+
+        order.Status.Should().Be(WorkOrderStatus.Delivered);
+        pending.Status.Should().Be(WorkOrderOperationStatus.Pending);
+        started.Status.Should().Be(WorkOrderOperationStatus.Started);
+    }
+
     [Fact]
     public void MarkInvoiced_from_InProduction_throws()
     {
