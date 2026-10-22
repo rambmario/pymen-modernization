@@ -314,3 +314,24 @@ Arrancar Fase 2 Cloud & Async: cerrar pregunta 8 (OT entregada con ops incomplet
 ### Tiempo estimado ahorrado
 
 ~1.5–2 h.
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 1 + follow-ups
+
+### Pedido principal
+
+OK Paso 0 → commit comando `revisar-paso`, aclarar ADR 0010 (Basic / idempotencia consumidor), luego Paso 1 contenedores.
+
+### Qué generó la IA
+
+- Commits chore + docs ADR; Dockerfiles API/worker/web; compose completo; worker placeholder; nginx; Config Service Bus; ajustes CORS/HTTPS/README/registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano Paso 1.
+- Runtime: contexto Docker Linux (máquina estaba en Windows containers); puerto SPA 8088.
+
+### Tiempo estimado ahorrado
+
+~2–3 h.

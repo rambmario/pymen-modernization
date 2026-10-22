@@ -584,3 +584,38 @@ Plan y decisiones de arquitectura para Cloud & Async (sin provisionar Azure toda
 ### Próximo paso
 
 Esperar OK → Paso 1 (Dockerfiles + docker-compose completo).
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 1: contenedores
+
+**Hora (aprox.):** 19:40–20:15 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Stack local completo con un solo `docker compose up`: SQL, API, worker, front, Azurite, emulador Service Bus.
+
+### Qué se hizo
+
+- Commits previos del día: `chore` comando `revisar-paso`; ADR 0010/0009 aclaración Basic sin duplicate detection.
+- `src/Pymen.Worker` placeholder (host listo; consumidor en Paso 3).
+- Dockerfiles multi-stage: API (`aspnet:10.0`, non-root `$APP_UID`), Worker (`runtime:10.0`), web (Node build + nginx).
+- `docker-compose.yml`: sqlserver, azurite, servicebus-emulator (+ `docker/servicebus/Config.json` cola `domain-events`), api, worker, web; healthchecks.
+- SPA en host **8088** (8080 bloqueado en Windows); nginx proxy `/api` → api.
+- API: CORS `localhost:8088`; `DisableHttpsRedirection` en compose.
+- README Getting started + `.env.example` (ACCEPT_EULA / hints Service Bus + Azurite).
+
+### Decisiones
+
+- Worker scaffold en Paso 1 para que el compose levante; lógica de cola/PDF en Paso 3.
+- Emulador Service Bus reutiliza el SQL del stack (standalone), sin SQL Edge extra.
+- Docker Desktop debe usar **Linux containers** (`desktop-linux`).
+
+### Problemas encontrados y cómo se resolvieron
+
+- Compose falló en Windows containers → `docker context use desktop-linux`.
+- Puerto 8080 forbidden → mapear web a **8088**.
+
+### Próximo paso
+
+Esperar OK → Paso 2 (domain events + Outbox).

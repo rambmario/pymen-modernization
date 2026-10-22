@@ -44,7 +44,9 @@ if (builder.Environment.IsDevelopment())
         options.AddPolicy(
             "FrontendDev",
             policy => policy
-                .WithOrigins("http://localhost:4200")
+                .WithOrigins(
+                    "http://localhost:4200",
+                    "http://localhost:8088")
                 .AllowAnyHeader()
                 .AllowAnyMethod());
     });
@@ -74,7 +76,11 @@ if (seedEnabled)
     await DemoUserSeeder.SeedAsync(app.Services);
 }
 
-app.UseHttpsRedirection();
+if (!app.Configuration.GetValue("DisableHttpsRedirection", false))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseMiddleware<TenantContextMiddleware>();

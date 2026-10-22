@@ -101,27 +101,28 @@ Clean Architecture layout: `Domain` ← `Application` ← `Infrastructure` / `Ap
 
 ## Getting started
 
-**Requirements:** .NET SDK 10 (see `global.json`), Node.js 22+, Docker Desktop, Git.
+**Requirements:** .NET SDK 10 (see `global.json`), Node.js 22+, Docker Desktop (**Linux containers**), Git.
 
 ```bash
 # 1. Secrets / local config (never commit .env)
 cp .env.example .env
 # Edit MSSQL_SA_PASSWORD, JWT_SIGNING_KEY (≥32 chars), DEMO_PASSWORD_*
 
-# 2. Database
-docker compose up -d
+# 2a. Full local stack (SQL, API, worker placeholder, SPA+nginx, Azurite, Service Bus emulator)
+docker compose up -d --build
+# SPA  →  http://localhost:8088   (nginx proxies /api; 8080 often blocked on Windows)
+# API  →  http://localhost:5207
 
-# 3. API  →  http://localhost:5207
-dotnet run --project src/Pymen.Api --launch-profile http
+# 2b. Or SQL only + run API/SPA on the host
+docker compose up -d sqlserver
+dotnet run --project src/Pymen.Api --launch-profile http   # http://localhost:5207
+cd web && npm ci && npm start                              # http://localhost:4200 (proxies /api)
 
-# 4. SPA  →  http://localhost:4200  (proxies /api to the API)
-cd web && npm ci && npm start
-
-# 5. Optional — regenerate README screenshots (API + SPA must be running)
+# 3. Optional — regenerate README screenshots (API + SPA must be running)
 cd web && npm run screenshots
 ```
 
-Docker SQL is published on host port **14333** (avoids clashing with a local SQL Server on 1433).
+Docker SQL is published on host port **14333** (avoids clashing with a local SQL Server on 1433). Worker is a host placeholder until Phase 2 / Paso 3 (queue consumer + PDF).
 
 **Demo users** (passwords come from `.env` / `DEMO_PASSWORD_*` — not listed here):
 
@@ -140,7 +141,7 @@ Operator can list/get work orders and drive shop-floor operations only. Admin/Pl
 
 | Project | Tests | Notes |
 |---------|-----------------|--------|
-| `Pymen.Domain.Tests` | 26 | Pure domain unit tests |
+| `Pymen.Domain.Tests` | 27 | Pure domain unit tests |
 | `Pymen.Application.Tests` | 7 | Services + InMemory EF |
 | `Pymen.Api.IntegrationTests` | 11 | Testcontainers SQL Server (needs Docker) |
 | `web` (Vitest) | 11 | Auth, guards, interceptor, OT list |

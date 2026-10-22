@@ -9,11 +9,20 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
+- Local full-stack Docker Compose: SQL Server, API, worker host placeholder, Angular+nginx, Azurite, Service Bus emulator (health checks; `docker compose up -d --build`).
+- Multi-stage Dockerfiles for API (non-root), Worker, and web (nginx); Service Bus emulator config (`domain-events` queue).
+- `Pymen.Worker` placeholder project (queue consumer in a later step).
+- Cursor command `.cursor/commands/revisar-paso.md` for step review checklist.
 - Owner decision: work orders may be delivered with unfinished operations (Pending/Started); domain test documents current behavior.
 - ADR 0009: Azure cloud architecture (Container Apps, Static Web Apps, SQL serverless, Service Bus, Blob, Key Vault, App Insights) with cost estimate.
-- ADR 0010: async messaging via transactional Outbox (not direct publish from HTTP).
+- ADR 0010: async messaging via transactional Outbox (not direct publish from HTTP); Basic tier has no broker duplicate detection.
 - Target cloud architecture Mermaid diagrams (`docs/architecture-cloud.md`).
 - Recruiter-oriented English README (architecture Mermaid, ADRs, getting started, testing, screenshots placeholders); MIT LICENSE.
+
+### Changed
+
+- Getting started: full compose stack on port 8088; requires Docker Linux containers.
+- API CORS allows `http://localhost:8088`; optional `DisableHttpsRedirection` for container HTTP.
 - Repository scaffolding: CHANGELOG, `.gitignore`, `docs/worklog.md`, `docs/ai-usage.md`, `docs/adr/`, `docs/legacy/`.
 - Legacy system analysis (`docs/legacy/legacy-analysis.md`).
 - Migration proposal and MVP roadmap (`docs/legacy/migration-proposal.md`).

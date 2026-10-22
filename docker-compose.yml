@@ -1,3 +1,5 @@
+name: pymen
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -11,11 +13,143 @@ services:
     volumes:
       - pymen-sql-data:/var/opt/mssql
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - pymen
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: pymen-azurite
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - pymen-azurite-data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"const n=require('net');const s=n.connect(10000,'127.0.0.1',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))\"",
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 10s
+    networks:
+      - pymen
+
+  servicebus-emulator:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: pymen-servicebus
+    pull_policy: always
+    volumes:
+      - ./docker/servicebus/Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+    environment:
+      SQL_SERVER: sqlserver
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      ACCEPT_EULA: "${ACCEPT_EULA:-Y}"
+      EMULATOR_HTTP_PORT: 5300
+      SQL_WAIT_INTERVAL: 30
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    # Image is distroless-like (no shell); host probe: http://localhost:5300/health
+    networks:
+      - pymen
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Pymen.Api/Dockerfile
+    container_name: pymen-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      DisableHttpsRedirection: "true"
+      Seed__Enabled: "true"
+      ConnectionStrings__Pymen: "Server=sqlserver,1433;Database=Pymen;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      JWT_SIGNING_KEY: "${JWT_SIGNING_KEY}"
+      DEMO_PASSWORD_ADMIN: "${DEMO_PASSWORD_ADMIN}"
+      DEMO_PASSWORD_PLANNER: "${DEMO_PASSWORD_PLANNER}"
+      DEMO_PASSWORD_OPERATOR: "${DEMO_PASSWORD_OPERATOR}"
+      ServiceBus__ConnectionString: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      ServiceBus__QueueName: domain-events
+      AzureStorage__ConnectionString: "${AZURITE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}"
+    ports:
+      - "5207:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      servicebus-emulator:
+        condition: service_started
+      azurite:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health || wget -qO- http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    networks:
+      - pymen
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Pymen.Worker/Dockerfile
+    container_name: pymen-worker
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ServiceBus__ConnectionString: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
+      ServiceBus__QueueName: domain-events
+      AzureStorage__ConnectionString: "${AZURITE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}"
+    depends_on:
+      servicebus-emulator:
+        condition: service_started
+      azurite:
+        condition: service_healthy
+      api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - pymen
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: pymen-web
+    ports:
+      # Host 8088: Windows often reserves/blocks 8080 (Hyper-V / excluded ranges).
+      - "8088:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - pymen
 
 volumes:
   pymen-sql-data:
+  pymen-azurite-data:
+
+networks:
+  pymen:
+    driver: bridge
