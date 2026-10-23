@@ -48,7 +48,9 @@ public sealed class PymenApiFactory : WebApplicationFactory<Program>, IAsyncLife
                 ["Jwt:SigningKey"] = "TEST_ONLY_signing_key_32chars_min!!",
                 ["SkipSeed"] = "false",
                 ["Seed:Enabled"] = "true",
-                ["EnableAuthProbe"] = "true"
+                ["EnableAuthProbe"] = "true",
+                // No Service Bus in API integration tests; outbox rows still persist via interceptor.
+                ["Outbox:PublisherEnabled"] = "false"
             });
         });
     }

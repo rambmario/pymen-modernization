@@ -619,3 +619,30 @@ Stack local completo con un solo `docker compose up`: SQL, API, worker, front, A
 ### Próximo paso
 
 Esperar OK → Paso 2 (domain events + Outbox).
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 2: domain events + Outbox
+
+**Hora (aprox.):** 21:05–21:25 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Eventos de dominio + tabla Outbox en la misma transacción EF; publisher a Service Bus con MessageId; tests de persistencia e idempotencia.
+
+### Qué se hizo
+
+- Eventos: `WorkOrderDelivered`, `WorkOrderCancelled`, `ProductionReceiptApplied`; `Entity` con cola de domain events.
+- `OutboxMessages` + interceptor `DomainEventToOutboxInterceptor`; migración `AddOutbox`.
+- `OutboxPublisher` + `OutboxPublisherHostedService` + `ServiceBusOutboxMessageSender` (MessageId = Outbox.Id).
+- Publisher solo si hay connection string y `Outbox:PublisherEnabled` (off en tests API).
+- Tests: 3 domain event + Outbox persistence + no double publish.
+
+### Decisiones
+
+- Outbox no es `ITenantOwned` (el publisher es proceso); `TenantId` va en columna/payload.
+- Idempotencia del publisher: status `Published` → no reenvía (Basic sin duplicate detection del broker).
+
+### Próximo paso
+
+Esperar OK → Paso 3 (Worker + QuestPDF).

@@ -8,6 +8,7 @@ using Pymen.Domain.Inventory;
 using Pymen.Domain.Production;
 using Pymen.Domain.Tenancy;
 using Pymen.Infrastructure.Identity;
+using Pymen.Infrastructure.Messaging;
 
 namespace Pymen.Infrastructure.Persistence;
 
@@ -34,6 +35,7 @@ public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>, IPymenD
     public DbSet<DeliveryNote> DeliveryNotes => Set<DeliveryNote>();
     public DbSet<DeliveryNoteLine> DeliveryNoteLines => Set<DeliveryNoteLine>();
     public DbSet<ProductionReceipt> ProductionReceipts => Set<ProductionReceipt>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,7 +52,21 @@ public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>, IPymenD
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        IgnoreDomainEventsOnEntities(modelBuilder);
         ApplyFailClosedTenantFilters(modelBuilder);
+    }
+
+    private static void IgnoreDomainEventsOnEntities(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(Entity).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+
+            modelBuilder.Entity(entityType.ClrType).Ignore(nameof(Entity.DomainEvents));
+        }
     }
 
     private void ApplyFailClosedTenantFilters(ModelBuilder modelBuilder)

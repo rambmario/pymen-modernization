@@ -1,5 +1,6 @@
 using Pymen.Domain.Catalog;
 using Pymen.Domain.Common;
+using Pymen.Domain.Events;
 using Pymen.Domain.Inventory;
 
 namespace Pymen.Domain.Production;
@@ -102,5 +103,13 @@ public sealed class ProductionReceipt : Entity, ITenantOwned
 
         finishedGoodsStock.Increase(Quantity);
         IsApplied = true;
+        Raise(new ProductionReceiptApplied(
+            Id,
+            TenantId,
+            ProductId,
+            WarehouseId,
+            Quantity,
+            WorkOrderId,
+            ReceivedAt));
     }
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Pymen.Application.Abstractions;
 using Pymen.Application.Auth;
 using Pymen.Infrastructure.Identity;
+using Pymen.Infrastructure.Messaging;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Infrastructure.Tenancy;
 
@@ -25,11 +27,17 @@ public static class DependencyInjection
         services.AddScoped<IWorkOrderNumberAllocator, WorkOrderNumberAllocator>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<JwtTokenService>();
+        services.AddSingleton<DomainEventToOutboxInterceptor>();
 
         var connectionString = ResolveConnectionString(configuration);
-        services.AddDbContext<PymenDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        services.AddDbContext<PymenDbContext>((sp, options) =>
+        {
+            options.UseSqlServer(connectionString);
+            options.AddInterceptors(sp.GetRequiredService<DomainEventToOutboxInterceptor>());
+        });
         services.AddScoped<IPymenDbContext>(sp => sp.GetRequiredService<PymenDbContext>());
+
+        AddOutboxMessaging(services, configuration);
 
         services
             .AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -95,6 +103,48 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    private static void AddOutboxMessaging(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<OutboxOptions>()
+            .Bind(configuration.GetSection(OutboxOptions.SectionName));
+
+        services.AddOptions<ServiceBusOptions>()
+            .Bind(configuration.GetSection(ServiceBusOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                if (!string.IsNullOrWhiteSpace(options.ConnectionString))
+                {
+                    return;
+                }
+
+                options.ConnectionString =
+                    configuration["ServiceBus:ConnectionString"]
+                    ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
+                    ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
+            });
+
+        var outboxEnabled = configuration.GetValue($"{OutboxOptions.SectionName}:PublisherEnabled", true);
+        var busConnection =
+            configuration[$"{ServiceBusOptions.SectionName}:ConnectionString"]
+            ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
+            ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
+
+        if (!outboxEnabled || string.IsNullOrWhiteSpace(busConnection))
+        {
+            return;
+        }
+
+        services.AddSingleton(sp =>
+        {
+            var connection = sp.GetRequiredService<IOptions<ServiceBusOptions>>().Value.ConnectionString
+                ?? throw new InvalidOperationException("Service Bus connection string is required when the outbox publisher is enabled.");
+            return new ServiceBusClient(connection);
+        });
+        services.AddSingleton<IOutboxMessageSender, ServiceBusOutboxMessageSender>();
+        services.AddSingleton<OutboxPublisher>();
+        services.AddHostedService<OutboxPublisherHostedService>();
     }
 
     internal static string ResolveConnectionString(IConfiguration configuration)

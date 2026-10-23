@@ -1,4 +1,5 @@
 using Pymen.Domain.Common;
+using Pymen.Domain.Events;
 using Pymen.Domain.Tenancy;
 
 namespace Pymen.Domain.Production;
@@ -92,6 +93,7 @@ public sealed class WorkOrder : Entity, ITenantOwned
         EnsureTransition(WorkOrderStatus.InProduction, WorkOrderStatus.Delivered);
         Status = WorkOrderStatus.Delivered;
         DeliveredAt = timeProvider.GetUtcNow();
+        Raise(new WorkOrderDelivered(Id, TenantId, Number, DeliveredAt.Value));
     }
 
     public void MarkInvoiced(TimeProvider timeProvider)
@@ -121,6 +123,7 @@ public sealed class WorkOrder : Entity, ITenantOwned
 
         Status = WorkOrderStatus.Cancelled;
         CancelledAt = timeProvider.GetUtcNow();
+        Raise(new WorkOrderCancelled(Id, TenantId, Number, CancelledAt.Value));
     }
 
     public void UpdateNotes(string? notes)
