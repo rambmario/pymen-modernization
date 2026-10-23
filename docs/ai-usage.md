@@ -335,3 +335,23 @@ OK Paso 0 → commit comando `revisar-paso`, aclarar ADR 0010 (Basic / idempoten
 ### Tiempo estimado ahorrado
 
 ~2–3 h.
+
+---
+
+## 2026-10-22 — Fase 2 / Paso 2
+
+### Pedido principal
+
+OK Paso 1 → domain events + Outbox + publisher Service Bus + tests (misma tx / no doble publish).
+
+### Qué generó la IA
+
+- Eventos de dominio, interceptor Outbox, migración, publisher/hosted service, Azure.Messaging.ServiceBus, tests y registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano antes del Paso 3.
+
+### Tiempo estimado ahorrado
+
+~2–2.5 h.
