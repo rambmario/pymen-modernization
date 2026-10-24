@@ -2,7 +2,7 @@ name: pymen
 
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2022-CU27-ubuntu-22.04
     container_name: pymen-sql
     environment:
       ACCEPT_EULA: "Y"
@@ -26,7 +26,7 @@ services:
       - pymen
 
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite:latest
+    image: mcr.microsoft.com/azure-storage/azurite:3.37.0
     container_name: pymen-azurite
     command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose --skipApiVersionCheck
     ports:
@@ -49,9 +49,8 @@ services:
       - pymen
 
   servicebus-emulator:
-    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
     container_name: pymen-servicebus
-    pull_policy: always
     volumes:
       - ./docker/servicebus/Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
     ports:
@@ -98,7 +97,8 @@ services:
       azurite:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health || wget -qO- http://127.0.0.1:8080/health || exit 1"]
+      # No curl/wget in the API image; TCP probe is enough for local compose liveness.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
       interval: 10s
       timeout: 5s
       retries: 12
