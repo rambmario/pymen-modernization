@@ -355,3 +355,23 @@ OK Paso 1 → domain events + Outbox + publisher Service Bus + tests (misma tx /
 ### Tiempo estimado ahorrado
 
 ~2–2.5 h.
+
+---
+
+## 2026-10-24 — Outbox lock/retry + Docker chore
+
+### Pedido principal
+
+OK Paso 2 con ajustes: pin compose tags, sin curl en API; reserva multi-réplica Outbox; retries + backoff; ADR 0010; luego Paso 3.
+
+### Qué generó la IA
+
+- chore Docker; claim SQL + LockedUntil/LockedBy; MaxAttempts/NextAttemptAt; tests paralelo/backoff; ADR 0010.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente al cerrar Paso 3.
+
+### Tiempo estimado ahorrado
+
+~1.5–2 h.

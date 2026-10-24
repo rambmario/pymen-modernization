@@ -17,4 +17,13 @@ public sealed class OutboxOptions
 
     public int PollIntervalSeconds { get; set; } = 2;
     public int BatchSize { get; set; } = 20;
+
+    /// <summary>Max publish attempts before Status = Failed (default 5).</summary>
+    public int MaxAttempts { get; set; } = 5;
+
+    /// <summary>How long a claimed row stays locked for a publisher replica.</summary>
+    public int LockDurationSeconds { get; set; } = 30;
+
+    /// <summary>Cap for exponential backoff delay (2^attempt seconds).</summary>
+    public int MaxBackoffSeconds { get; set; } = 300;
 }

@@ -679,6 +679,16 @@ namespace Pymen.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("LockedBy")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset?>("LockedUntil")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset>("OccurredAt")
                         .HasColumnType("datetimeoffset");
 
@@ -704,7 +714,9 @@ namespace Pymen.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Status", "OccurredAt");
+                    b.HasIndex("LockedUntil");
+
+                    b.HasIndex("Status", "NextAttemptAt", "OccurredAt");
 
                     b.ToTable("OutboxMessages", (string)null);
                 });

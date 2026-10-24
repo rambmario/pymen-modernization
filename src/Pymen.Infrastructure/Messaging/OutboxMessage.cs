@@ -14,6 +14,9 @@ public sealed class OutboxMessage
     public DateTimeOffset? PublishedAt { get; private set; }
     public int AttemptCount { get; private set; }
     public string? LastError { get; private set; }
+    public DateTimeOffset? NextAttemptAt { get; private set; }
+    public DateTimeOffset? LockedUntil { get; private set; }
+    public string? LockedBy { get; private set; }
 
     private OutboxMessage()
     {
@@ -38,7 +41,8 @@ public sealed class OutboxMessage
             Payload = payload,
             TenantId = tenantId,
             OccurredAt = domainEvent.OccurredAt,
-            Status = OutboxMessageStatus.Pending
+            Status = OutboxMessageStatus.Pending,
+            NextAttemptAt = domainEvent.OccurredAt
         };
     }
 
@@ -48,15 +52,42 @@ public sealed class OutboxMessage
         Status = OutboxMessageStatus.Published;
         PublishedAt = timeProvider.GetUtcNow();
         LastError = null;
+        LockedUntil = null;
+        LockedBy = null;
+        NextAttemptAt = null;
     }
 
-    public void MarkAttemptFailed(string error)
+    /// <summary>
+    /// Records a failed publish attempt with exponential backoff. Marks Failed when max attempts is reached.
+    /// </summary>
+    public void MarkAttemptFailed(
+        string error,
+        TimeProvider timeProvider,
+        int maxAttempts,
+        int maxBackoffSeconds)
     {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        if (maxAttempts < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxAttempts));
+        }
+
         AttemptCount++;
         LastError = string.IsNullOrWhiteSpace(error) ? "Unknown error" : error.Trim();
-        if (AttemptCount >= 10)
+        LockedUntil = null;
+        LockedBy = null;
+
+        if (AttemptCount >= maxAttempts)
         {
             Status = OutboxMessageStatus.Failed;
+            NextAttemptAt = null;
+            return;
         }
+
+        var delaySeconds = Math.Min(
+            maxBackoffSeconds,
+            (int)Math.Pow(2, AttemptCount));
+        NextAttemptAt = timeProvider.GetUtcNow().AddSeconds(delaySeconds);
+        Status = OutboxMessageStatus.Pending;
     }
 }

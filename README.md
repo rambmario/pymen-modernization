@@ -143,7 +143,7 @@ Operator can list/get work orders and drive shop-floor operations only. Admin/Pl
 |---------|-----------------|--------|
 | `Pymen.Domain.Tests` | 30 | Pure domain unit tests |
 | `Pymen.Application.Tests` | 7 | Services + InMemory EF |
-| `Pymen.Api.IntegrationTests` | 13 | Testcontainers SQL Server (needs Docker) |
+| `Pymen.Api.IntegrationTests` | 15 | Testcontainers SQL Server (needs Docker) |
 | `web` (Vitest) | 11 | Auth, guards, interceptor, OT list |
 
 ```bash

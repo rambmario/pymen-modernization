@@ -10,6 +10,7 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 ### Added
 
 - Domain events (`WorkOrderDelivered`, `WorkOrderCancelled`, `ProductionReceiptApplied`) with transactional Outbox (`OutboxMessages`) and Service Bus publisher (`MessageId` idempotency; ADR 0010).
+- Outbox multi-replica claim (`UPDLOCK`/`READPAST`, `LockedUntil`/`LockedBy`) and configurable retries with exponential backoff (`NextAttemptAt`, `MaxAttempts`).
 - Local full-stack Docker Compose: SQL Server, API, worker host placeholder, Angular+nginx, Azurite, Service Bus emulator (health checks; `docker compose up -d --build`).
 - Multi-stage Dockerfiles for API (non-root), Worker, and web (nginx); Service Bus emulator config (`domain-events` queue).
 - `Pymen.Worker` placeholder project (queue consumer in a later step).
@@ -24,6 +25,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 - Getting started: full compose stack on port 8088; requires Docker Linux containers.
 - API CORS allows `http://localhost:8088`; optional `DisableHttpsRedirection` for container HTTP.
+- docker-compose image tags pinned (no `:latest`); API runtime image no longer installs curl (TCP health probe).
+- ADR 0010: multi-replica outbox reservation and retry/backoff policy.
 - Repository scaffolding: CHANGELOG, `.gitignore`, `docs/worklog.md`, `docs/ai-usage.md`, `docs/adr/`, `docs/legacy/`.
 - Legacy system analysis (`docs/legacy/legacy-analysis.md`).
 - Migration proposal and MVP roadmap (`docs/legacy/migration-proposal.md`).

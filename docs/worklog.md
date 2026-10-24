@@ -646,3 +646,23 @@ Eventos de dominio + tabla Outbox en la misma transacción EF; publisher a Servi
 ### Próximo paso
 
 Esperar OK → Paso 3 (Worker + QuestPDF).
+
+---
+
+## 2026-10-24 — Fase 2: Outbox multi-réplica + retries + chore Docker
+
+**Hora (aprox.):** 11:05–11:20 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Ajustes pre-Paso 3: tags fijos en compose, API sin curl; reserva Outbox multi-réplica; reintentos con backoff; ADR 0010.
+
+### Qué se hizo
+
+- chore: pin MSSQL CU27, Azurite 3.37.0, Service Bus emulator 2.0.1; healthcheck API vía `/dev/tcp`; sin curl en imagen final.
+- Outbox: claim `UPDLOCK/READPAST` + `LockedUntil`/`LockedBy`; `NextAttemptAt` + `MaxAttempts` (default 5) + backoff `2^n`.
+- Migración `OutboxLockAndRetry`; tests paralelo + Failed tras max intentos; ADR 0010 actualizado.
+
+### Próximo paso
+
+Paso 3 (Worker + QuestPDF + descarga remito).
