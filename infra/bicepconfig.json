@@ -1,0 +1,29 @@
+{
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": true,
+      "rules": {
+        "no-unused-params": { "level": "error" },
+        "no-unused-vars": { "level": "error" },
+        "no-unused-existing-resources": { "level": "error" },
+        "outputs-should-not-contain-secrets": { "level": "error" },
+        "secure-secrets-in-params": { "level": "error" },
+        "secure-params-in-nested-deploy": { "level": "error" },
+        "simplify-interpolation": { "level": "error" },
+        "prefer-interpolation": { "level": "error" },
+        "use-stable-resource-identifiers": { "level": "error" },
+        "use-stable-vm-image": { "level": "error" },
+        "hardcoded-env-url": { "level": "error" },
+        "no-hardcoded-location": { "level": "error" },
+        "explicit-values-for-loc-params": { "level": "error" },
+        "no-unnecessary-dependson": { "level": "error" },
+        "protect-commandtoexecute-secrets": { "level": "error" },
+        "use-recent-api-versions": { "level": "error" },
+        "use-resource-symbol-reference": { "level": "error" },
+        "use-parent-property": { "level": "error" },
+        "secrets-in-locals": { "level": "error" }
+      }
+    }
+  }
+}

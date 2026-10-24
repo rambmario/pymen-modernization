@@ -170,7 +170,8 @@ test-results/
 docs/legacy/_*.txt
 docs/legacy/_*.tmp
 
-# Bicep build output
+# Bicep build output (keep config + params)
 infra/**/*.json
+!infra/bicepconfig.json
 !infra/**/*.bicepparam
 
