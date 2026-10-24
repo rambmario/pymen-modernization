@@ -666,3 +666,25 @@ Ajustes pre-Paso 3: tags fijos en compose, API sin curl; reserva Outbox multi-r�
 ### Próximo paso
 
 Paso 3 (Worker + QuestPDF + descarga remito).
+
+---
+
+## 2026-10-24 — Fase 2 / Paso 3: Worker + QuestPDF + descarga remito
+
+**Hora (aprox.):** 11:20–11:25 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Worker que consume Service Bus, genera PDF de remito, lo guarda en Blob; endpoint de descarga con aislamiento por tenant; botón en Angular.
+
+### Qué se hizo
+
+- `DeliverAsync` crea `DeliveryNote` (`RN-{OT}`) + evento con `DeliveryNoteNumber`.
+- QuestPDF + Blob/Azurite/`InMemory` store; `ProcessedMessages` para idempotencia del consumidor.
+- `DomainEventsConsumer` en `Pymen.Worker`; abandon → reintento/DLQ; logs estructurados.
+- `GET /api/work-orders/{id}/delivery-note.pdf` (404 cross-tenant / sin PDF).
+- UI: botón **Descargar remito**; tests PDF + handler; migración `AddProcessedMessages`.
+
+### Próximo paso
+
+Esperar OK → Paso 4 (Bicep / Azure setup docs).

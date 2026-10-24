@@ -375,3 +375,23 @@ OK Paso 2 con ajustes: pin compose tags, sin curl en API; reserva multi-réplica
 ### Tiempo estimado ahorrado
 
 ~1.5–2 h.
+
+---
+
+## 2026-10-24 — Fase 2 / Paso 3
+
+### Pedido principal
+
+Worker + QuestPDF + Blob + descarga remito (API + Angular) + tests.
+
+### Qué generó la IA
+
+- Consumer, PDF, stores, Deliver→DeliveryNote, endpoint, UI, tests Infrastructure, registro.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano; screenshots Paso 7.
+
+### Tiempo estimado ahorrado
+
+~2.5–3.5 h.

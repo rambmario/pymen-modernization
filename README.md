@@ -122,7 +122,7 @@ cd web && npm ci && npm start                              # http://localhost:42
 cd web && npm run screenshots
 ```
 
-Docker SQL is published on host port **14333** (avoids clashing with a local SQL Server on 1433). Worker is a host placeholder until Phase 2 / Paso 3 (queue consumer + PDF).
+Docker SQL is published on host port **14333** (avoids clashing with a local SQL Server on 1433). The worker consumes `WorkOrderDelivered`, generates the remito PDF (QuestPDF), and stores it in Azurite/Blob; use **Descargar remito** on a Delivered/Invoiced OT.
 
 **Demo users** (passwords come from `.env` / `DEMO_PASSWORD_*` — not listed here):
 
