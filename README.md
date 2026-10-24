@@ -81,6 +81,7 @@ Clean Architecture layout: `Domain` ← `Application` ← `Infrastructure` / `Ap
 - **Server-side OT pagination/filters** (`items`, `page`, `pageSize`, `totalCount`; max page size 100).
 - **Angular SPA** with Material, signals, lazy routes, role guards — [ADR 0007](docs/adr/0007-frontend-angular.md).
 - **GitHub Actions CI** + Dependabot; ephemeral JWT/SQL passwords in CI — [ADR 0008](docs/adr/0008-ci-github-actions.md).
+- **Azure demo (Phase 2):** Bicep in [`infra/`](infra/) (Container Apps, Static Web Apps Free, SQL serverless, Service Bus Basic, Blob, Key Vault, App Insights, managed identity, budget). Manual steps only — [docs/azure-setup.md](docs/azure-setup.md), [ADR 0009](docs/adr/0009-arquitectura-cloud-azure.md).
 
 ---
 

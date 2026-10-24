@@ -395,3 +395,25 @@ Worker + QuestPDF + Blob + descarga remito (API + Angular) + tests.
 ### Tiempo estimado ahorrado
 
 ~2.5–3.5 h.
+
+---
+
+## 2026-10-24 — Fase 2 / Paso 4 + conteo tests Paso 3
+
+### Pedido principal
+
+Agregar conteo exacto de tests al worklog del Paso 3; seguir con Paso 4 (Bicep). Frenar si hace falta suscripción/`az login`.
+
+### Qué generó la IA
+
+- Tabla de tests re-verificada (54 .NET + 17 Angular).
+- `/infra` Bicep (RG, MI, monitoring, storage, SB, SQL serverless, KV, ACA, SWA, budget) + `docs/azure-setup.md`.
+- Registro (worklog, ai-usage, CHANGELOG). Sin login ni deploy a Azure.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK; suscripción/login cuando quiera provisionar.
+
+### Tiempo estimado ahorrado
+
+~2–3 h.

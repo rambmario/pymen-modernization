@@ -685,6 +685,54 @@ Worker que consume Service Bus, genera PDF de remito, lo guarda en Blob; endpoin
 - `GET /api/work-orders/{id}/delivery-note.pdf` (404 cross-tenant / sin PDF).
 - UI: botón **Descargar remito**; tests PDF + handler; migración `AddProcessedMessages`.
 
+### Tests (conteo exacto al cierre del paso)
+
+Re-verificado 2026-10-24 ~11:29 (UTC-3, America/Buenos_Aires) con `dotnet test` + `npm test`:
+
+| Proyecto | Passed | Failed | Skipped |
+|----------|--------|--------|---------|
+| `Pymen.Domain.Tests` | 30 | 0 | 0 |
+| `Pymen.Application.Tests` | 7 | 0 | 0 |
+| `Pymen.Infrastructure.Tests` | 2 | 0 | 0 |
+| `Pymen.Api.IntegrationTests` | 15 | 0 | 0 |
+| **.NET total** | **54** | **0** | **0** |
+| `web` (Vitest / Angular) | 17 | 0 | 0 |
+
 ### Próximo paso
 
-Esperar OK → Paso 4 (Bicep / Azure setup docs).
+Paso 4 (Bicep / Azure setup docs).
+
+---
+
+## 2026-10-24 — Fase 2 / Paso 4: infraestructura Bicep + azure-setup
+
+**Hora (aprox.):** 11:28–11:45 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+IaC en `/infra` (RG, ACA api+worker, SWA Free, SQL serverless, Service Bus Basic, Blob, Key Vault, App Insights, Log Analytics, Managed Identity + RBAC, budget) y guía manual `docs/azure-setup.md`. Sin `az login` ni provisionar.
+
+### Qué se hizo
+
+- `infra/main.bicep` (subscription scope) + módulos + `main.bicepparam` + `infra/README.md`.
+- User-assigned MI compartida; roles Blob Contributor, Service Bus Data Owner, Key Vault Secrets User; SQL Entra admin = MI.
+- Secretos (SQL/SB/Storage/JWT) en Key Vault; ACA los referencia; scale-to-zero (HTTP + scaler Service Bus en worker).
+- Budget mensual con alertas 80%/100% Actual + Forecast.
+- `docs/azure-setup.md`: suscripción, login, providers, deploy, post-deploy, borrado — solo pasos humanos.
+- Conteo de tests del Paso 3 re-verificado y dejado en el worklog.
+
+### Decisiones
+
+- Placeholders de imagen hasta Paso 5 (CI/GHCR); no ACR en este paso (costo).
+- SQL con admin SQL + Entra (MI), no AAD-only, para bootstrap de migraciones.
+- Connection strings aún vía KV (el código actual usa strings); RBAC listo para DefaultAzureCredential después.
+- No se ejecutó deploy: hace falta suscripción + `az login` de Mario.
+
+### Problemas
+
+- Bicep CLI sin `number`: budget/`amount` como `int`; `minCapacity` SQL via `json('0.5')`.
+- `az bicep install` implícito al primer `build`; JSON compilado ignorado en `.gitignore`.
+
+### Próximo paso
+
+**Frenar:** Mario debe crear/activar suscripción Azure y `az login` si quiere provisionar. Luego Paso 5 (CI/CD OIDC) o deploy guiado con la checklist de `azure-setup.md`.

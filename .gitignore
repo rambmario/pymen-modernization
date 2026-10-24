@@ -169,3 +169,8 @@ test-results/
 ## Temp analysis artifacts (local only)
 docs/legacy/_*.txt
 docs/legacy/_*.tmp
+
+# Bicep build output
+infra/**/*.json
+!infra/**/*.bicepparam
+
