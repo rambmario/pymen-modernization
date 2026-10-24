@@ -91,6 +91,13 @@ export class WorkOrderDetailComponent implements OnInit {
     return this.canManageWorkOrder() && wo.status === 'Delivered';
   }
 
+  showDownloadRemito(wo: WorkOrderResponse): boolean {
+    return (
+      this.auth.hasAnyRole('Admin', 'Planner', 'Operator') &&
+      (wo.status === 'Delivered' || wo.status === 'Invoiced')
+    );
+  }
+
   showCancelWorkOrder(wo: WorkOrderResponse): boolean {
     return this.canManageWorkOrder() && (wo.status === 'Draft' || wo.status === 'InProduction');
   }
@@ -136,6 +143,32 @@ export class WorkOrderDetailComponent implements OnInit {
 
   invoice(): void {
     this.run(() => this.workOrdersApi.invoice(this.id()));
+  }
+
+  downloadRemito(): void {
+    if (this.busy()) {
+      return;
+    }
+    this.busy.set(true);
+    this.workOrdersApi
+      .downloadDeliveryNotePdf(this.id())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          const wo = this.workOrder();
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = `remito-${wo?.number ?? this.id()}.pdf`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+          this.busy.set(false);
+        },
+        error: (error) => {
+          this.busy.set(false);
+          this.apiErrors.showHttpError(error);
+        },
+      });
   }
 
   cancelWorkOrder(): void {

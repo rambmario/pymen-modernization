@@ -93,7 +93,8 @@ public sealed class WorkOrder : Entity, ITenantOwned
         EnsureTransition(WorkOrderStatus.InProduction, WorkOrderStatus.Delivered);
         Status = WorkOrderStatus.Delivered;
         DeliveredAt = timeProvider.GetUtcNow();
-        Raise(new WorkOrderDelivered(Id, TenantId, Number, DeliveredAt.Value));
+        var deliveryNoteNumber = $"RN-{Number}";
+        Raise(new WorkOrderDelivered(Id, TenantId, Number, deliveryNoteNumber, DeliveredAt.Value));
     }
 
     public void MarkInvoiced(TimeProvider timeProvider)

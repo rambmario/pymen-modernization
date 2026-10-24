@@ -36,6 +36,7 @@ public sealed class PymenDbContext : IdentityDbContext<ApplicationUser>, IPymenD
     public DbSet<DeliveryNoteLine> DeliveryNoteLines => Set<DeliveryNoteLine>();
     public DbSet<ProductionReceipt> ProductionReceipts => Set<ProductionReceipt>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<ProcessedMessage> ProcessedMessages => Set<ProcessedMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

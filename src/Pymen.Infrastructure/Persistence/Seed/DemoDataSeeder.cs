@@ -88,7 +88,11 @@ public static class DemoDataSeeder
         delivered.StartProduction(time);
         delivered.MarkDelivered(time);
 
+        var remito = DeliveryNote.Create(tenant.Id, delivered.Id, $"RN-{delivered.Number}", time, delivered.Notes);
+        remito.AddLine(finished.Id, 2);
+
         db.WorkOrders.AddRange(draft, inProduction, delivered);
+        db.DeliveryNotes.Add(remito);
         await db.SaveChangesAsync(cancellationToken);
     }
 }

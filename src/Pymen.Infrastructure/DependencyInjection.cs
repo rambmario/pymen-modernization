@@ -11,8 +11,10 @@ using Microsoft.IdentityModel.Tokens;
 using Pymen.Application.Abstractions;
 using Pymen.Application.Auth;
 using Pymen.Infrastructure.Identity;
+using Pymen.Infrastructure.Documents;
 using Pymen.Infrastructure.Messaging;
 using Pymen.Infrastructure.Persistence;
+using Pymen.Infrastructure.Storage;
 using Pymen.Infrastructure.Tenancy;
 
 namespace Pymen.Infrastructure;
@@ -38,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IPymenDbContext>(sp => sp.GetRequiredService<PymenDbContext>());
 
         AddOutboxMessaging(services, configuration);
+        AddDeliveryNoteDocuments(services, configuration);
 
         services
             .AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -145,6 +148,41 @@ public static class DependencyInjection
         services.AddSingleton<IOutboxMessageSender, ServiceBusOutboxMessageSender>();
         services.AddSingleton<OutboxPublisher>();
         services.AddHostedService<OutboxPublisherHostedService>();
+    }
+
+    private static void AddDeliveryNoteDocuments(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<IDeliveryNotePdfGenerator, QuestDeliveryNotePdfGenerator>();
+        services.AddScoped<WorkOrderDeliveredPdfHandler>();
+
+        services.AddOptions<AzureStorageOptions>()
+            .Bind(configuration.GetSection(AzureStorageOptions.SectionName))
+            .PostConfigure(options =>
+            {
+                if (!string.IsNullOrWhiteSpace(options.ConnectionString))
+                {
+                    return;
+                }
+
+                options.ConnectionString =
+                    configuration["AzureStorage:ConnectionString"]
+                    ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
+                    ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING");
+            });
+
+        var storageConnection =
+            configuration[$"{AzureStorageOptions.SectionName}:ConnectionString"]
+            ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
+            ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING");
+
+        if (!string.IsNullOrWhiteSpace(storageConnection))
+        {
+            services.AddSingleton<IDeliveryNotePdfStore, AzureBlobDeliveryNotePdfStore>();
+        }
+        else
+        {
+            services.AddSingleton<IDeliveryNotePdfStore, InMemoryDeliveryNotePdfStore>();
+        }
     }
 
     internal static string ResolveConnectionString(IConfiguration configuration)

@@ -1,6 +1,8 @@
 using Pymen.Api.Filters;
+using Pymen.Application.Abstractions;
 using Pymen.Application.Auth;
 using Pymen.Application.Production;
+using Pymen.Infrastructure.Storage;
 
 namespace Pymen.Api.Endpoints;
 
@@ -30,6 +32,26 @@ public static class WorkOrderEndpoints
             {
                 var workOrder = await workOrders.GetAsync(id, ct);
                 return workOrder is null ? Results.NotFound() : Results.Ok(workOrder);
+            })
+            .RequireAuthorization(policy => policy.RequireRole(AppRoles.Admin, AppRoles.Planner, AppRoles.Operator));
+
+        group.MapGet("/{id:guid}/delivery-note.pdf", async (
+                Guid id,
+                WorkOrderService workOrders,
+                ITenantContext tenant,
+                IDeliveryNotePdfStore pdfStore,
+                CancellationToken ct) =>
+            {
+                var workOrder = await workOrders.GetAsync(id, ct);
+                if (workOrder is null)
+                {
+                    return Results.NotFound();
+                }
+
+                var stream = await pdfStore.OpenReadAsync(tenant.TenantId, id, ct);
+                return stream is null
+                    ? Results.NotFound()
+                    : Results.File(stream, "application/pdf", $"remito-{workOrder.Number}.pdf");
             })
             .RequireAuthorization(policy => policy.RequireRole(AppRoles.Admin, AppRoles.Planner, AppRoles.Operator));
 

@@ -128,8 +128,33 @@ public sealed class WorkOrderService
     public Task<WorkOrderResponse?> StartAsync(Guid id, CancellationToken cancellationToken = default) =>
         MutateAsync(id, wo => wo.StartProduction(_time), cancellationToken);
 
-    public Task<WorkOrderResponse?> DeliverAsync(Guid id, CancellationToken cancellationToken = default) =>
-        MutateAsync(id, wo => wo.MarkDelivered(_time), cancellationToken);
+    public async Task<WorkOrderResponse?> DeliverAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var workOrder = await FindWorkOrderAsync(id, tracking: true, cancellationToken);
+        if (workOrder is null)
+        {
+            return null;
+        }
+
+        workOrder.MarkDelivered(_time);
+
+        var deliveryNoteNumber = $"RN-{workOrder.Number}";
+        var note = DeliveryNote.Create(
+            workOrder.TenantId,
+            workOrder.Id,
+            deliveryNoteNumber,
+            _time,
+            workOrder.Notes);
+
+        foreach (var line in workOrder.Lines.OrderBy(l => l.LineNumber))
+        {
+            note.AddLine(line.ProductId, line.Quantity);
+        }
+
+        _db.DeliveryNotes.Add(note);
+        await _db.SaveChangesAsync(cancellationToken);
+        return workOrder.ToResponse();
+    }
 
     public Task<WorkOrderResponse?> InvoiceAsync(Guid id, CancellationToken cancellationToken = default) =>
         MutateAsync(id, wo => wo.MarkInvoiced(_time), cancellationToken);

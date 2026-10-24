@@ -20,6 +20,11 @@
       @if (showInvoice(wo)) {
         <button mat-stroked-button type="button" [disabled]="busy()" (click)="invoice()">Facturar</button>
       }
+      @if (showDownloadRemito(wo)) {
+        <button mat-stroked-button type="button" [disabled]="busy()" (click)="downloadRemito()">
+          Descargar remito
+        </button>
+      }
       @if (showCancelWorkOrder(wo)) {
         <button mat-button color="warn" type="button" [disabled]="busy()" (click)="cancelWorkOrder()">
           Cancelar OT

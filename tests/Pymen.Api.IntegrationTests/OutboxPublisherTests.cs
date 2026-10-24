@@ -209,10 +209,12 @@ public sealed class OutboxPublisherTests : IAsyncLifetime
 
         for (var i = 0; i < count; i++)
         {
+            var number = $"00010000{i:D4}";
             var evt = new WorkOrderDelivered(
                 Guid.CreateVersion7(),
                 Guid.CreateVersion7(),
-                $"00010000{i:D4}",
+                number,
+                $"RN-{number}",
                 time.GetUtcNow());
             var msg = OutboxMessage.FromDomainEvent(evt, JsonOptions);
             db.OutboxMessages.Add(msg);

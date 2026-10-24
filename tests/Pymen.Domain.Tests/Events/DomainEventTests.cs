@@ -26,6 +26,7 @@ public class DomainEventTests
         delivered.WorkOrderId.Should().Be(order.Id);
         delivered.TenantId.Should().Be(tenant.Id);
         delivered.WorkOrderNumber.Should().Be(order.Number);
+        delivered.DeliveryNoteNumber.Should().Be($"RN-{order.Number}");
         delivered.OccurredAt.Should().Be(order.DeliveredAt);
     }
 

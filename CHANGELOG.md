@@ -11,6 +11,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 - Domain events (`WorkOrderDelivered`, `WorkOrderCancelled`, `ProductionReceiptApplied`) with transactional Outbox (`OutboxMessages`) and Service Bus publisher (`MessageId` idempotency; ADR 0010).
 - Outbox multi-replica claim (`UPDLOCK`/`READPAST`, `LockedUntil`/`LockedBy`) and configurable retries with exponential backoff (`NextAttemptAt`, `MaxAttempts`).
+- `Pymen.Worker` consumes `WorkOrderDelivered`, generates delivery-note PDFs with QuestPDF, stores per-tenant blobs; API `GET /api/work-orders/{id}/delivery-note.pdf`; Angular **Descargar remito**.
+- Deliver creates a `DeliveryNote` (`RN-{workOrderNumber}`) in the same transaction as `MarkDelivered`.
 - Local full-stack Docker Compose: SQL Server, API, worker host placeholder, Angular+nginx, Azurite, Service Bus emulator (health checks; `docker compose up -d --build`).
 - Multi-stage Dockerfiles for API (non-root), Worker, and web (nginx); Service Bus emulator config (`domain-events` queue).
 - `Pymen.Worker` placeholder project (queue consumer in a later step).

@@ -71,4 +71,10 @@ export class WorkOrderService {
       {},
     );
   }
+
+  downloadDeliveryNotePdf(id: string): Observable<Blob> {
+    return this.http.get(`/api/work-orders/${id}/delivery-note.pdf`, {
+      responseType: 'blob',
+    });
+  }
 }
