@@ -736,3 +736,30 @@ IaC en `/infra` (RG, ACA api+worker, SWA Free, SQL serverless, Service Bus Basic
 ### Próximo paso
 
 **Frenar:** Mario debe crear/activar suscripción Azure y `az login` si quiere provisionar. Luego Paso 5 (CI/CD OIDC) o deploy guiado con la checklist de `azure-setup.md`.
+
+---
+
+## 2026-10-24 — Fase 2 / Paso 4 (ajuste): Entra-only + MI sin connection strings
+
+**Hora (aprox.):** 11:56–12:30 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Ajustar Paso 4: SQL solo Entra, sin `listKeys`/connection strings para SB/Storage, MIs separadas con RBAC mínimo, código dual-mode, actualizar ADR 0009. No desplegar; frenar antes del Paso 5.
+
+### Qué se hizo
+
+- Bicep: 2 UAMI (api/worker); SQL `azureADOnlyAuthentication`; SB `disableLocalAuth` + Sender/Receiver; Storage `allowSharedKeyAccess=false` + Reader/Contributor; KV solo JWT; ACA env con endpoints + `AZURE_CLIENT_ID`.
+- `Azure.Identity` + factories Service Bus / Blob; Worker sin exigir connection string.
+- `docs/azure-setup.md`, `infra/scripts/create-sql-mi-users.sql`, ADR 0009 / architecture-cloud.
+- `/revisar-paso` (build + tests).
+
+### Decisiones
+
+- Mantener ADR 0009 (Managed Identity, sin secretos de conexión); KV solo JWT.
+- Entra admin SQL = deployer (UPN/objectId); MIs como usuarios de DB post-deploy.
+- No `az login` / no provisionar.
+
+### Próximo paso
+
+**Frenar Paso 5.** Mario: suscripción + `az login` + checklist azure-setup (usuarios SQL MI) cuando quiera demo.

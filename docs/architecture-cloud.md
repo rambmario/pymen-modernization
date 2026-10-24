@@ -19,11 +19,13 @@ flowchart TB
       Worker["Pymen.Worker<br/>QuestPDF → Blob"]
     end
 
-    SQL[("Azure SQL<br/>serverless + auto-pause")]
-    SB["Azure Service Bus<br/>queue"]
-    Blob["Blob Storage<br/>delivery-note PDFs"]
-    KV["Key Vault"]
+    SQL[("Azure SQL Entra-only<br/>serverless + auto-pause")]
+    SB["Azure Service Bus<br/>queue · no SAS"]
+    Blob["Blob Storage<br/>no shared key"]
+    KV["Key Vault<br/>JWT only"]
     AI["Application Insights<br/>+ Log Analytics"]
+    MIapi["UAMI API<br/>Sender · Blob Reader"]
+    MIworker["UAMI Worker<br/>Receiver · Blob Contributor"]
   end
 
   Browser --> SWA
@@ -31,10 +33,11 @@ flowchart TB
   API --> SQL
   API -->|"Outbox → publish"| SB
   API -.-> KV
+  API -.-> MIapi
   Worker --> SB
   Worker --> Blob
   Worker --> SQL
-  Worker -.-> KV
+  Worker -.-> MIworker
   API --> Blob
   API -.-> AI
   Worker -.-> AI
@@ -73,7 +76,7 @@ sequenceDiagram
 
 ## Principios
 
-- **Sin secretos en repo:** Managed Identity + OIDC en CI; Key Vault solo si hace falta.
+- **Sin secretos de conexión en Azure:** Managed Identity + endpoints; Key Vault solo JWT; OIDC en CI (Paso 5).
 - **Multi-tenant:** filtros `TenantId` en API y rutas de blob por tenant.
 - **Costo mínimo:** scale-to-zero, SQL auto-pause, Static Web Apps Free, grants de consumo.
 - **Observabilidad:** OpenTelemetry → Application Insights con `TenantId` (sin PII).

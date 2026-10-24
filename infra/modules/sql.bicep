@@ -7,18 +7,18 @@ param serverName string
 @description('Database name.')
 param databaseName string = 'Pymen'
 
-@description('SQL admin login (bootstrap only; prefer Managed Identity at runtime).')
-param administratorLogin string
+@description('Entra admin display name / UPN (deployer). Required for Entra-only auth.')
+param entraAdminLogin string
 
-@description('SQL admin password (bootstrap only).')
-@secure()
-param administratorLoginPassword string
+@description('Entra object ID of the admin (deployer user or group).')
+param entraAdminObjectId string
 
-@description('Display name for the Entra admin (managed identity name).')
-param aadAdminLogin string
-
-@description('Object ID (principal ID) of the managed identity used as Entra admin.')
-param aadAdminObjectId string
+@description('Principal type of the Entra admin (User or Group).')
+@allowed([
+  'User'
+  'Group'
+])
+param entraAdminPrincipalType string = 'User'
 
 @description('Auto-pause delay in minutes (serverless). -1 disables pause.')
 @minValue(-1)
@@ -32,18 +32,16 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   location: location
   tags: tags
   properties: {
-    administratorLogin: administratorLogin
-    administratorLoginPassword: administratorLoginPassword
     version: '12.0'
     minimalTlsVersion: '1.2'
     publicNetworkAccess: 'Enabled'
     administrators: {
       administratorType: 'ActiveDirectory'
-      azureADOnlyAuthentication: false
-      login: aadAdminLogin
-      sid: aadAdminObjectId
+      azureADOnlyAuthentication: true
+      login: entraAdminLogin
+      sid: entraAdminObjectId
       tenantId: tenant().tenantId
-      principalType: 'Application'
+      principalType: entraAdminPrincipalType
     }
   }
 }
@@ -77,12 +75,12 @@ resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
 }
 
 var fqdn = sqlServer.properties.fullyQualifiedDomainName
-var sqlConnectionString = 'Server=tcp:${fqdn},1433;Initial Catalog=${database.name};User ID=${administratorLogin};Password=${administratorLoginPassword};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
 output serverId string = sqlServer.id
 output serverName string = sqlServer.name
 output fullyQualifiedDomainName string = fqdn
 output databaseName string = database.name
 output databaseId string = database.id
-@secure()
-output sqlConnectionString string = sqlConnectionString
+
+@description('Connection string template for Managed Identity (substitute Client Id per app).')
+output sqlConnectionStringTemplate string = 'Server=tcp:${fqdn},1433;Initial Catalog=${database.name};Authentication=Active Directory Managed Identity;User Id={CLIENT_ID};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'

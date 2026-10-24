@@ -10,8 +10,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Pymen.Application.Abstractions;
 using Pymen.Application.Auth;
-using Pymen.Infrastructure.Identity;
 using Pymen.Infrastructure.Documents;
+using Pymen.Infrastructure.Identity;
 using Pymen.Infrastructure.Messaging;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Infrastructure.Storage;
@@ -117,34 +117,48 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(ServiceBusOptions.SectionName))
             .PostConfigure(options =>
             {
-                if (!string.IsNullOrWhiteSpace(options.ConnectionString))
+                if (string.IsNullOrWhiteSpace(options.ConnectionString))
                 {
-                    return;
+                    options.ConnectionString =
+                        configuration["ServiceBus:ConnectionString"]
+                        ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
+                        ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
                 }
 
-                options.ConnectionString =
-                    configuration["ServiceBus:ConnectionString"]
-                    ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
-                    ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
+                if (string.IsNullOrWhiteSpace(options.FullyQualifiedNamespace))
+                {
+                    options.FullyQualifiedNamespace =
+                        configuration["ServiceBus:FullyQualifiedNamespace"]
+                        ?? Environment.GetEnvironmentVariable("ServiceBus__FullyQualifiedNamespace");
+                }
             });
 
-        var outboxEnabled = configuration.GetValue($"{OutboxOptions.SectionName}:PublisherEnabled", true);
-        var busConnection =
-            configuration[$"{ServiceBusOptions.SectionName}:ConnectionString"]
-            ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
-            ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
+        var provisional = new ServiceBusOptions
+        {
+            ConnectionString =
+                configuration[$"{ServiceBusOptions.SectionName}:ConnectionString"]
+                ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
+                ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING"),
+            FullyQualifiedNamespace =
+                configuration[$"{ServiceBusOptions.SectionName}:FullyQualifiedNamespace"]
+                ?? Environment.GetEnvironmentVariable("ServiceBus__FullyQualifiedNamespace"),
+        };
 
-        if (!outboxEnabled || string.IsNullOrWhiteSpace(busConnection))
+        if (!ServiceBusClientFactory.IsConfigured(provisional))
         {
             return;
         }
 
+        // Shared by API outbox publisher and Worker consumer (local CS or Azure FQNS + MI).
         services.AddSingleton(sp =>
+            ServiceBusClientFactory.Create(sp.GetRequiredService<IOptions<ServiceBusOptions>>().Value));
+
+        var outboxEnabled = configuration.GetValue($"{OutboxOptions.SectionName}:PublisherEnabled", true);
+        if (!outboxEnabled)
         {
-            var connection = sp.GetRequiredService<IOptions<ServiceBusOptions>>().Value.ConnectionString
-                ?? throw new InvalidOperationException("Service Bus connection string is required when the outbox publisher is enabled.");
-            return new ServiceBusClient(connection);
-        });
+            return;
+        }
+
         services.AddSingleton<IOutboxMessageSender, ServiceBusOutboxMessageSender>();
         services.AddSingleton<OutboxPublisher>();
         services.AddHostedService<OutboxPublisherHostedService>();
@@ -159,23 +173,34 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(AzureStorageOptions.SectionName))
             .PostConfigure(options =>
             {
-                if (!string.IsNullOrWhiteSpace(options.ConnectionString))
+                if (string.IsNullOrWhiteSpace(options.ConnectionString))
                 {
-                    return;
+                    options.ConnectionString =
+                        configuration["AzureStorage:ConnectionString"]
+                        ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
+                        ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING");
                 }
 
-                options.ConnectionString =
-                    configuration["AzureStorage:ConnectionString"]
-                    ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
-                    ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING");
+                if (string.IsNullOrWhiteSpace(options.BlobServiceUri))
+                {
+                    options.BlobServiceUri =
+                        configuration["AzureStorage:BlobServiceUri"]
+                        ?? Environment.GetEnvironmentVariable("AzureStorage__BlobServiceUri");
+                }
             });
 
-        var storageConnection =
-            configuration[$"{AzureStorageOptions.SectionName}:ConnectionString"]
-            ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
-            ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING");
+        var provisional = new AzureStorageOptions
+        {
+            ConnectionString =
+                configuration[$"{AzureStorageOptions.SectionName}:ConnectionString"]
+                ?? Environment.GetEnvironmentVariable("AzureStorage__ConnectionString")
+                ?? Environment.GetEnvironmentVariable("AZURITE_CONNECTION_STRING"),
+            BlobServiceUri =
+                configuration[$"{AzureStorageOptions.SectionName}:BlobServiceUri"]
+                ?? Environment.GetEnvironmentVariable("AzureStorage__BlobServiceUri"),
+        };
 
-        if (!string.IsNullOrWhiteSpace(storageConnection))
+        if (BlobServiceClientFactory.IsConfigured(provisional))
         {
             services.AddSingleton<IDeliveryNotePdfStore, AzureBlobDeliveryNotePdfStore>();
         }

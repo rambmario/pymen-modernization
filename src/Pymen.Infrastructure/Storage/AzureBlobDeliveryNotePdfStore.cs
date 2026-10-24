@@ -8,7 +8,12 @@ public sealed class AzureStorageOptions
 {
     public const string SectionName = "AzureStorage";
 
+    /// <summary>Azurite / shared key. Prefer BlobServiceUri + MI in Azure.</summary>
     public string? ConnectionString { get; set; }
+
+    /// <summary>e.g. https://stpymendemo….blob.core.windows.net/ (Azure MI mode).</summary>
+    public string? BlobServiceUri { get; set; }
+
     public string DeliveryNotesContainer { get; set; } = "delivery-notes";
 }
 
@@ -17,15 +22,13 @@ public sealed class AzureBlobDeliveryNotePdfStore : IDeliveryNotePdfStore
     private readonly BlobContainerClient _container;
 
     public AzureBlobDeliveryNotePdfStore(IOptions<AzureStorageOptions> options)
+        : this(BlobServiceClientFactory.Create(options.Value), options.Value.DeliveryNotesContainer)
     {
-        var value = options.Value;
-        if (string.IsNullOrWhiteSpace(value.ConnectionString))
-        {
-            throw new InvalidOperationException("AzureStorage:ConnectionString is required.");
-        }
+    }
 
-        var service = new BlobServiceClient(value.ConnectionString);
-        _container = service.GetBlobContainerClient(value.DeliveryNotesContainer);
+    internal AzureBlobDeliveryNotePdfStore(BlobServiceClient service, string containerName)
+    {
+        _container = service.GetBlobContainerClient(containerName);
     }
 
     public async Task UploadAsync(Guid tenantId, Guid workOrderId, byte[] pdf, CancellationToken cancellationToken = default)

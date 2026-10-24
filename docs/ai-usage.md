@@ -417,3 +417,25 @@ Agregar conteo exacto de tests al worklog del Paso 3; seguir con Paso 4 (Bicep).
 ### Tiempo estimado ahorrado
 
 ~2–3 h.
+
+---
+
+## 2026-10-24 — Paso 4 ajuste Entra-only / MI
+
+### Pedido principal
+
+Ajustar Paso 4: SQL Entra-only, SB/Storage sin listKeys, MIs separadas + RBAC mínimo, dual-mode en código, actualizar ADR 0009, `/revisar-paso`, no desplegar ni Paso 5.
+
+### Qué generó la IA
+
+- Bicep refactor (2 UAMI, SQL AAD-only, SB/Storage sin keys, KV JWT-only, ACA endpoints).
+- `Azure.Identity` + factories; Worker dual-mode; script SQL MI users; docs/ADR.
+- Build/tests + checklist revisar-paso.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano; suscripción Azure pendiente.
+
+### Tiempo estimado ahorrado
+
+~2–2.5 h.

@@ -21,17 +21,38 @@ param logAnalyticsSharedKey string
 @secure()
 param appInsightsConnectionString string
 
-@description('User-assigned managed identity resource ID.')
-param managedIdentityId string
+@description('API user-assigned managed identity resource ID.')
+param apiManagedIdentityId string
 
-@description('User-assigned managed identity client ID.')
-param managedIdentityClientId string
+@description('API user-assigned managed identity client ID.')
+param apiManagedIdentityClientId string
+
+@description('Worker user-assigned managed identity resource ID.')
+param workerManagedIdentityId string
+
+@description('Worker user-assigned managed identity client ID.')
+param workerManagedIdentityClientId string
 
 @description('Key Vault URI (https://...vault.azure.net/).')
 param keyVaultUri string
 
+@description('SQL FQDN (server.database.windows.net).')
+param sqlFullyQualifiedDomainName string
+
+@description('SQL database name.')
+param sqlDatabaseName string = 'Pymen'
+
+@description('Service Bus fully qualified namespace (name.servicebus.windows.net).')
+param serviceBusFullyQualifiedNamespace string
+
+@description('Service Bus namespace name (for KEDA scaler metadata).')
+param serviceBusNamespaceName string
+
 @description('Service Bus queue name.')
 param serviceBusQueueName string = 'domain-events'
+
+@description('Blob service URI (https://account.blob.core.windows.net/).')
+param blobServiceUri string
 
 @description('Blob container for delivery notes.')
 param deliveryNotesContainerName string = 'delivery-notes'
@@ -47,6 +68,9 @@ param corsOrigin string = ''
 
 @description('Resource tags.')
 param tags object = {}
+
+var apiSqlConnectionString = 'Server=tcp:${sqlFullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;User Id=${apiManagedIdentityClientId};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+var workerSqlConnectionString = 'Server=tcp:${sqlFullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;User Id=${workerManagedIdentityClientId};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
 resource managedEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: environmentName
@@ -70,7 +94,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentityId}': {}
+      '${apiManagedIdentityId}': {}
     }
   }
   properties: {
@@ -85,24 +109,9 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
       }
       secrets: [
         {
-          name: 'sql-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/SqlConnectionString'
-          identity: managedIdentityId
-        }
-        {
-          name: 'servicebus-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/ServiceBusConnectionString'
-          identity: managedIdentityId
-        }
-        {
-          name: 'storage-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/StorageConnectionString'
-          identity: managedIdentityId
-        }
-        {
           name: 'jwt-signing-key'
           keyVaultUrl: '${keyVaultUri}secrets/JwtSigningKey'
-          identity: managedIdentityId
+          identity: apiManagedIdentityId
         }
       ]
     }
@@ -126,19 +135,19 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'ConnectionStrings__Pymen'
-              secretRef: 'sql-connection'
+              value: apiSqlConnectionString
             }
             {
-              name: 'ServiceBus__ConnectionString'
-              secretRef: 'servicebus-connection'
+              name: 'ServiceBus__FullyQualifiedNamespace'
+              value: serviceBusFullyQualifiedNamespace
             }
             {
               name: 'ServiceBus__QueueName'
               value: serviceBusQueueName
             }
             {
-              name: 'AzureStorage__ConnectionString'
-              secretRef: 'storage-connection'
+              name: 'AzureStorage__BlobServiceUri'
+              value: blobServiceUri
             }
             {
               name: 'AzureStorage__DeliveryNotesContainer'
@@ -166,7 +175,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'AZURE_CLIENT_ID'
-              value: managedIdentityClientId
+              value: apiManagedIdentityClientId
             }
             {
               name: 'Cors__Origins'
@@ -200,30 +209,13 @@ resource worker 'Microsoft.App/containerApps@2024-03-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentityId}': {}
+      '${workerManagedIdentityId}': {}
     }
   }
   properties: {
     managedEnvironmentId: managedEnv.id
     configuration: {
       activeRevisionsMode: 'Single'
-      secrets: [
-        {
-          name: 'sql-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/SqlConnectionString'
-          identity: managedIdentityId
-        }
-        {
-          name: 'servicebus-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/ServiceBusConnectionString'
-          identity: managedIdentityId
-        }
-        {
-          name: 'storage-connection'
-          keyVaultUrl: '${keyVaultUri}secrets/StorageConnectionString'
-          identity: managedIdentityId
-        }
-      ]
     }
     template: {
       containers: [
@@ -241,23 +233,27 @@ resource worker 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'ConnectionStrings__Pymen'
-              secretRef: 'sql-connection'
+              value: workerSqlConnectionString
             }
             {
-              name: 'ServiceBus__ConnectionString'
-              secretRef: 'servicebus-connection'
+              name: 'ServiceBus__FullyQualifiedNamespace'
+              value: serviceBusFullyQualifiedNamespace
             }
             {
               name: 'ServiceBus__QueueName'
               value: serviceBusQueueName
             }
             {
-              name: 'AzureStorage__ConnectionString'
-              secretRef: 'storage-connection'
+              name: 'AzureStorage__BlobServiceUri'
+              value: blobServiceUri
             }
             {
               name: 'AzureStorage__DeliveryNotesContainer'
               value: deliveryNotesContainerName
+            }
+            {
+              name: 'Outbox__PublisherEnabled'
+              value: 'false'
             }
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -265,7 +261,7 @@ resource worker 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'AZURE_CLIENT_ID'
-              value: managedIdentityClientId
+              value: workerManagedIdentityClientId
             }
           ]
         }
@@ -276,19 +272,17 @@ resource worker 'Microsoft.App/containerApps@2024-03-01' = {
         rules: [
           {
             name: 'servicebus-scale'
-            custom: {
+            // identity is supported at runtime for MI auth; Bicep types lag behind (no connection string).
+            custom: union({
               type: 'azure-servicebus'
               metadata: {
                 queueName: serviceBusQueueName
+                namespace: serviceBusNamespaceName
                 messageCount: '1'
               }
-              auth: [
-                {
-                  secretRef: 'servicebus-connection'
-                  triggerParameter: 'connection'
-                }
-              ]
-            }
+            }, {
+              identity: workerManagedIdentityId
+            })
           }
         ]
       }

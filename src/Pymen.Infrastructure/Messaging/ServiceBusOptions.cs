@@ -4,7 +4,12 @@ public sealed class ServiceBusOptions
 {
     public const string SectionName = "ServiceBus";
 
+    /// <summary>Local emulator / SAS. Prefer FullyQualifiedNamespace + MI in Azure.</summary>
     public string? ConnectionString { get; set; }
+
+    /// <summary>e.g. sb-pymen-demo-xxxxxx.servicebus.windows.net (Azure MI mode).</summary>
+    public string? FullyQualifiedNamespace { get; set; }
+
     public string QueueName { get; set; } = "domain-events";
 }
 
@@ -12,7 +17,7 @@ public sealed class OutboxOptions
 {
     public const string SectionName = "Outbox";
 
-    /// <summary>When false, the BackgroundService publisher is not registered (tests / SQL-only).</summary>
+    /// <summary>When false, the BackgroundService publisher is not registered (tests / worker / SQL-only).</summary>
     public bool PublisherEnabled { get; set; } = true;
 
     public int PollIntervalSeconds { get; set; } = 2;

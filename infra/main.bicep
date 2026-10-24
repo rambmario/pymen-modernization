@@ -14,14 +14,13 @@ param environmentName string = 'demo'
 @description('Unique suffix for globally unique names (leave empty to derive from subscription).')
 param uniqueSuffix string = ''
 
-@description('SQL administrator login (bootstrap; runtime prefers Managed Identity).')
-param sqlAdministratorLogin string = 'pymenadmin'
+@description('Entra admin login for Azure SQL (your UPN or display name). Required — SQL is Entra-only.')
+param sqlEntraAdminLogin string
 
-@description('SQL administrator password (secure; never commit real values).')
-@secure()
-param sqlAdministratorPassword string
+@description('Entra object ID of the SQL admin (deployer user). Required — no SQL password.')
+param sqlEntraAdminObjectId string
 
-@description('JWT signing key for the API (min ~32 chars).')
+@description('JWT signing key for the API (min ~32 chars). Stored in Key Vault only.')
 @secure()
 param jwtSigningKey string
 
@@ -40,7 +39,7 @@ param budgetContactEmail string
 @description('Budget start date (first day of month), e.g. 2026-11-01.')
 param budgetStartDate string = '2026-11-01'
 
-@description('Optional Entra object ID of the deployer (Key Vault Secrets Officer).')
+@description('Optional Entra object ID of the deployer (Key Vault Secrets Officer). Defaults to sqlEntraAdminObjectId when empty.')
 param deployerObjectId string = ''
 
 @description('Resource tags applied to tagged resources.')
@@ -53,6 +52,7 @@ param tags object = {
 var suffix = empty(uniqueSuffix) ? take(uniqueString(subscription().subscriptionId, environmentName), 6) : uniqueSuffix
 var namePrefix = 'pymen-${environmentName}'
 var rgName = 'rg-${namePrefix}'
+var kvDeployerObjectId = empty(deployerObjectId) ? sqlEntraAdminObjectId : deployerObjectId
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: rgName
@@ -65,7 +65,8 @@ module identity 'modules/identity.bicep' = {
   scope: rg
   params: {
     location: location
-    name: 'id-${namePrefix}'
+    apiName: 'id-${namePrefix}-api'
+    workerName: 'id-${namePrefix}-worker'
   }
 }
 
@@ -87,7 +88,8 @@ module storage 'modules/storage.bicep' = {
     location: location
     name: take(replace('stpymen${environmentName}${suffix}', '-', ''), 24)
     deliveryNotesContainerName: 'delivery-notes'
-    managedIdentityPrincipalId: identity.outputs.principalId
+    apiPrincipalId: identity.outputs.apiPrincipalId
+    workerPrincipalId: identity.outputs.workerPrincipalId
     tags: tags
   }
 }
@@ -99,7 +101,8 @@ module serviceBus 'modules/serviceBus.bicep' = {
     location: location
     namespaceName: 'sb-${namePrefix}-${suffix}'
     queueName: 'domain-events'
-    managedIdentityPrincipalId: identity.outputs.principalId
+    apiPrincipalId: identity.outputs.apiPrincipalId
+    workerPrincipalId: identity.outputs.workerPrincipalId
     tags: tags
   }
 }
@@ -111,10 +114,9 @@ module sql 'modules/sql.bicep' = {
     location: location
     serverName: 'sql-${namePrefix}-${suffix}'
     databaseName: 'Pymen'
-    administratorLogin: sqlAdministratorLogin
-    administratorLoginPassword: sqlAdministratorPassword
-    aadAdminLogin: identity.outputs.name
-    aadAdminObjectId: identity.outputs.principalId
+    entraAdminLogin: sqlEntraAdminLogin
+    entraAdminObjectId: sqlEntraAdminObjectId
+    entraAdminPrincipalType: 'User'
     autoPauseDelayMinutes: 60
     tags: tags
   }
@@ -126,11 +128,8 @@ module keyVault 'modules/keyVault.bicep' = {
   params: {
     location: location
     name: take('kv${replace(namePrefix, '-', '')}${suffix}', 24)
-    managedIdentityPrincipalId: identity.outputs.principalId
-    deployerObjectId: deployerObjectId
-    sqlConnectionString: sql.outputs.sqlConnectionString
-    serviceBusConnectionString: serviceBus.outputs.connectionString
-    storageConnectionString: storage.outputs.connectionString
+    apiPrincipalId: identity.outputs.apiPrincipalId
+    deployerObjectId: kvDeployerObjectId
     jwtSigningKey: jwtSigningKey
     tags: tags
   }
@@ -157,10 +156,17 @@ module containerApps 'modules/containerApps.bicep' = {
     logAnalyticsCustomerId: monitoring.outputs.logAnalyticsCustomerId
     logAnalyticsSharedKey: monitoring.outputs.logAnalyticsSharedKey
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
-    managedIdentityId: identity.outputs.id
-    managedIdentityClientId: identity.outputs.clientId
+    apiManagedIdentityId: identity.outputs.apiId
+    apiManagedIdentityClientId: identity.outputs.apiClientId
+    workerManagedIdentityId: identity.outputs.workerId
+    workerManagedIdentityClientId: identity.outputs.workerClientId
     keyVaultUri: keyVault.outputs.uri
+    sqlFullyQualifiedDomainName: sql.outputs.fullyQualifiedDomainName
+    sqlDatabaseName: sql.outputs.databaseName
+    serviceBusFullyQualifiedNamespace: serviceBus.outputs.fullyQualifiedNamespace
+    serviceBusNamespaceName: serviceBus.outputs.name
     serviceBusQueueName: serviceBus.outputs.queueName
+    blobServiceUri: storage.outputs.blobEndpoint
     deliveryNotesContainerName: storage.outputs.deliveryNotesContainerName
     apiImage: apiImage
     workerImage: workerImage
@@ -181,13 +187,19 @@ module budget 'modules/budget.bicep' = {
 }
 
 output resourceGroupName string = rg.name
-output managedIdentityClientId string = identity.outputs.clientId
-output managedIdentityPrincipalId string = identity.outputs.principalId
+output apiManagedIdentityName string = identity.outputs.apiName
+output apiManagedIdentityClientId string = identity.outputs.apiClientId
+output apiManagedIdentityPrincipalId string = identity.outputs.apiPrincipalId
+output workerManagedIdentityName string = identity.outputs.workerName
+output workerManagedIdentityClientId string = identity.outputs.workerClientId
+output workerManagedIdentityPrincipalId string = identity.outputs.workerPrincipalId
 output sqlFullyQualifiedDomainName string = sql.outputs.fullyQualifiedDomainName
 output sqlDatabaseName string = sql.outputs.databaseName
 output serviceBusNamespace string = serviceBus.outputs.name
+output serviceBusFullyQualifiedNamespace string = serviceBus.outputs.fullyQualifiedNamespace
 output serviceBusQueueName string = serviceBus.outputs.queueName
 output storageAccountName string = storage.outputs.name
+output blobServiceUri string = storage.outputs.blobEndpoint
 output keyVaultName string = keyVault.outputs.name
 output keyVaultUri string = keyVault.outputs.uri
 output apiFqdn string = containerApps.outputs.apiFqdn

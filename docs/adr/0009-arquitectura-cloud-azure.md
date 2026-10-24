@@ -1,6 +1,6 @@
 # ADR 0009 — Arquitectura cloud en Azure (mínimo costo)
 
-**Estado:** Aceptado  
+**Estado:** Aceptado (actualizado 2026-10-24)  
 **Fecha:** 2026-10-22  
 **Decisores:** Mario
 
@@ -20,15 +20,31 @@ Desplegar Pymen en Azure con estos recursos:
 |---------|-----|----------------------|
 | **Azure Container Apps** | API (`Pymen.Api`) y worker (`Pymen.Worker`) | Consumption; scale-to-zero cuando sea posible |
 | **Azure Static Web Apps** | SPA Angular | Free |
-| **Azure SQL Database** | Persistencia EF Core | Serverless (GP serverless) o free offer si aplica; **auto-pause** |
-| **Azure Service Bus** | Cola de eventos de dominio | **Basic** (cola única MVP; sin duplicate detection del broker — ver ADR 0010). Standard solo si hace falta topics / duplicate detection |
-| **Azure Blob Storage** | PDFs de remito por tenant | StorageV2 / Hot; acceso vía Managed Identity + SAS cortas |
-| **Azure Key Vault** | Secretos residuales (si hace falta) | Standard; preferir Managed Identity sobre secretos |
+| **Azure SQL Database** | Persistencia EF Core | Serverless (GP serverless); **auto-pause**; **solo Microsoft Entra** (`azureADOnlyAuthentication = true`); **sin** `administratorLoginPassword` |
+| **Azure Service Bus** | Cola de eventos de dominio | **Basic**; auth solo Entra (`disableLocalAuth`); **sin** connection strings / `listKeys` en IaC |
+| **Azure Blob Storage** | PDFs de remito por tenant | StorageV2 / Hot; **`allowSharedKeyAccess = false`**; acceso vía Managed Identity |
+| **Azure Key Vault** | Secreto residual **JWT** únicamente | Standard; no se guardan cadenas SQL/SB/Storage |
 | **Application Insights** + Log Analytics | Trazas, métricas, logs | Workspace-based; retención corta |
-| **Managed Identity** | API y worker → SQL, Bus, Blob, Key Vault | System-assigned (o user-assigned compartida) |
+| **Managed Identity** | Identidades **separadas** API y worker | User-assigned; RBAC de mínimo privilegio (ver abajo) |
 | **Budget alert** | Tope de gasto en la suscripción | Alerta (no hard-cap) documentada en setup |
 
-Infraestructura como código: Bicep en `/infra` (Paso 4). CI/CD con OIDC (Paso 5). Sin connection strings con contraseña en producción.
+### Autenticación runtime (Azure)
+
+| Dependencia | API | Worker |
+|-------------|-----|--------|
+| SQL | Cadena con `Authentication=Active Directory Managed Identity` + `User Id=<api clientId>` | Igual con clientId del worker |
+| Service Bus | `FullyQualifiedNamespace` + `DefaultAzureCredential` → rol **Data Sender** | Mismo endpoint → rol **Data Receiver** |
+| Blob | `BlobServiceUri` + MI → rol **Storage Blob Data Reader** | Mismo URI → rol **Storage Blob Data Contributor** |
+| Key Vault | Secrets User (JWT) | No necesita |
+
+Los usuarios SQL de cada MI se crean post-deploy (`CREATE USER … FROM EXTERNAL PROVIDER`); script en `infra/scripts/create-sql-mi-users.sql` y checklist en `docs/azure-setup.md`.
+
+### Local vs Azure (código)
+
+- **Local:** connection strings (SQL docker, emulador Service Bus, Azurite).
+- **Azure:** endpoints + `DefaultAzureCredential` / Managed Identity (`AZURE_CLIENT_ID` en ACA).
+
+Infraestructura como código: Bicep en `/infra` (Paso 4). CI/CD con OIDC (Paso 5). **Sin connection strings con clave compartida en producción.**
 
 ## Alternativas consideradas
 
@@ -37,6 +53,8 @@ Infraestructura como código: Bicep en `/infra` (Paso 4). CI/CD con OIDC (Paso 5
 | **AKS** | Overhead operativo y costo fijo; excesivo para demo portfolio. |
 | **App Service (Windows/Linux)** | Más simple que ACA para una sola app, pero peor fit para API + worker + scale-to-zero; Container Apps alinea mejor con contenedores. |
 | **SQL provisionado (DTU/vCore fijo)** | Costo fijo aunque no haya tráfico; serverless + auto-pause encaja con demo esporádica. |
+| **SQL con password + Entra (híbrido)** | Rechazado: secretos de conexión innecesarios; Entra-only + MI como usuario de DB. |
+| **MI compartida API+worker + Data Owner** | Rechazado: mínimo privilegio pide Sender/Receiver y Reader/Contributor separados. |
 | **Una DB SQL por tenant** | Rechazado en ADR 0002 (shared DB + `TenantId`). |
 | **Functions only (sin Container Apps)** | La API Minimal + Identity + EF y el worker con QuestPDF encajan mejor como contenedores .NET largos. |
 | **RabbitMQ self-hosted** | Más ops; Service Bus managed + emulador local cubre portfolio. |
@@ -53,7 +71,7 @@ Precios públicos varían por región y oferta; cifras orientativas para **poca 
 | Azure SQL serverless | **~$0–15** | Free offer (si disponible en la suscripción) o compute solo al despertar + storage mínimo; auto-pause crítico |
 | Service Bus | **~$0–1** | Basic/cola con poco volumen; Standard si se necesitan topics más adelante |
 | Blob Storage | **< $1** | Pocos PDFs; LRS |
-| Key Vault | **< $1** | Operaciones esporádicas |
+| Key Vault | **< $1** | Solo JWT; operaciones esporádicas |
 | Application Insights / Log Analytics | **~$0–5** | Retención corta; cuidado con sampling si sube el volumen |
 | **Total orientativo** | **~$0–25 / mes** | Con presupuesto alerta (p. ej. $20–30) para cortar sorpresas |
 
@@ -61,7 +79,8 @@ Precios públicos varían por región y oferta; cifras orientativas para **poca 
 
 ## Consecuencias
 
-- Demo pública viable con gasto controlado; Mario debe crear suscripción, login y permisos (ver `docs/azure-setup.md` en Paso 4) — la IA no provisiona ni paga.
+- Demo pública viable con gasto controlado; Mario debe crear suscripción, login y permisos (ver `docs/azure-setup.md`) — la IA no provisiona ni paga.
 - Cold starts: SQL serverless y ACA scale-to-zero implican latencia al primer hit tras idle.
-- Managed Identity simplifica secretos pero exige roles RBAC correctos en Bicep.
+- Entra-only SQL exige un paso humano post-deploy (usuarios MI + firewall + migraciones con tu identidad Entra).
+- Managed Identity + RBAC fino (Sender/Receiver, Reader/Contributor) evita secretos de plataforma en Key Vault.
 - El front en Static Web Apps se desacopla del ciclo de deploy de la API/worker.

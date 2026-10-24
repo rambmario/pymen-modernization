@@ -10,20 +10,14 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
-var serviceBusConnection =
-    builder.Configuration["ServiceBus:ConnectionString"]
-    ?? Environment.GetEnvironmentVariable("ServiceBus__ConnectionString")
-    ?? Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
-
-if (string.IsNullOrWhiteSpace(serviceBusConnection))
+if (!builder.Services.Any(d => d.ServiceType == typeof(ServiceBusClient)))
 {
     throw new InvalidOperationException(
-        "Service Bus connection string is required for Pymen.Worker (ServiceBus:ConnectionString).");
+        "Service Bus is required for Pymen.Worker. Set ServiceBus:ConnectionString (local emulator) "
+        + "or ServiceBus:FullyQualifiedNamespace (Azure Managed Identity).");
 }
 
-builder.Services.AddSingleton(_ => new ServiceBusClient(serviceBusConnection));
 builder.Services.AddHostedService<DomainEventsConsumer>();
 
-// Placeholder removed — DomainEventsConsumer owns the host lifetime work.
 var host = builder.Build();
 await host.RunAsync();

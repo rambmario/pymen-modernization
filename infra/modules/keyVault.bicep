@@ -4,25 +4,13 @@ param location string
 @description('Key Vault name (globally unique).')
 param name string
 
-@description('Principal ID of the shared managed identity (secrets user).')
-param managedIdentityPrincipalId string
+@description('Principal ID of the API managed identity (JWT secret reader).')
+param apiPrincipalId string
 
 @description('Optional deployer object ID for initial secret management (Entra user/SP).')
 param deployerObjectId string = ''
 
-@description('SQL connection string stored as a secret (password or MI form).')
-@secure()
-param sqlConnectionString string
-
-@description('Service Bus connection string (RootManageSharedAccessKey or send/listen).')
-@secure()
-param serviceBusConnectionString string
-
-@description('Azure Storage connection string for delivery-note blobs.')
-@secure()
-param storageConnectionString string
-
-@description('JWT signing key for the API.')
+@description('JWT signing key for the API (only residual secret — no SQL/SB/Storage connection strings).')
 @secure()
 param jwtSigningKey string
 
@@ -52,12 +40,12 @@ var secretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 // Built-in: Key Vault Secrets Officer (deployer bootstrap)
 var secretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c3fc7cd'
 
-resource miSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(keyVault.id, managedIdentityPrincipalId, secretsUserRoleId)
+resource apiSecretsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(keyVault.id, apiPrincipalId, secretsUserRoleId)
   scope: keyVault
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', secretsUserRoleId)
-    principalId: managedIdentityPrincipalId
+    principalId: apiPrincipalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -72,30 +60,6 @@ resource deployerSecretsOfficer 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-resource sqlSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'SqlConnectionString'
-  properties: {
-    value: sqlConnectionString
-  }
-}
-
-resource serviceBusSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'ServiceBusConnectionString'
-  properties: {
-    value: serviceBusConnectionString
-  }
-}
-
-resource storageSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
-  parent: keyVault
-  name: 'StorageConnectionString'
-  properties: {
-    value: storageConnectionString
-  }
-}
-
 resource jwtSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'JwtSigningKey'
@@ -107,7 +71,4 @@ resource jwtSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
 output id string = keyVault.id
 output name string = keyVault.name
 output uri string = keyVault.properties.vaultUri
-output sqlSecretUri string = sqlSecret.properties.secretUri
-output serviceBusSecretUri string = serviceBusSecret.properties.secretUri
-output storageSecretUri string = storageSecret.properties.secretUri
 output jwtSecretUri string = jwtSecret.properties.secretUri

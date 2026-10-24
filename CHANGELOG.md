@@ -9,7 +9,9 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
-- Azure Bicep under `infra/` (Container Apps API+worker, Static Web Apps Free, SQL serverless, Service Bus Basic, Blob, Key Vault, App Insights, Log Analytics, user-assigned MI + RBAC, subscription budget) and manual setup guide `docs/azure-setup.md` (no automated provision).
+- Azure Bicep under `infra/` (Container Apps API+worker, Static Web Apps Free, SQL serverless Entra-only, Service Bus Basic, Blob, Key Vault JWT-only, App Insights, Log Analytics, **separate** API/worker managed identities + least-privilege RBAC, subscription budget) and manual setup guide `docs/azure-setup.md` (no automated provision).
+- Dual-mode Azure clients in Infrastructure/Worker: local connection strings (emulator/Azurite) vs Azure endpoints + `DefaultAzureCredential` / Managed Identity.
+- SQL post-deploy script `infra/scripts/create-sql-mi-users.sql` for MI database users.
 - Domain events (`WorkOrderDelivered`, `WorkOrderCancelled`, `ProductionReceiptApplied`) with transactional Outbox (`OutboxMessages`) and Service Bus publisher (`MessageId` idempotency; ADR 0010).
 - Outbox multi-replica claim (`UPDLOCK`/`READPAST`, `LockedUntil`/`LockedBy`) and configurable retries with exponential backoff (`NextAttemptAt`, `MaxAttempts`).
 - `Pymen.Worker` consumes `WorkOrderDelivered`, generates delivery-note PDFs with QuestPDF, stores per-tenant blobs; API `GET /api/work-orders/{id}/delivery-note.pdf`; Angular **Descargar remito**.
