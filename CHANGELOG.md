@@ -9,6 +9,9 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Added
 
+- CI job validating Bicep (`az bicep lint` + `build`; linter warnings fail) and manual `deploy-azure.yml` (OIDC `workflow_dispatch`; skips when Azure repo variables are unset).
+- OpenTelemetry for API and worker (console / OTLP collector in compose / Application Insights when configured).
+- README **Cloud-ready** section and local demo GIF (`docs/images/demo-remito.gif`, `npm run demo:gif`).
 - Azure Bicep under `infra/` (Container Apps API+worker, Static Web Apps Free, SQL serverless Entra-only, Service Bus Basic, Blob, Key Vault JWT-only, App Insights, Log Analytics, **separate** API/worker managed identities + least-privilege RBAC, subscription budget) and manual setup guide `docs/azure-setup.md` (no automated provision).
 - Dual-mode Azure clients in Infrastructure/Worker: local connection strings (emulator/Azurite) vs Azure endpoints + `DefaultAzureCredential` / Managed Identity.
 - SQL post-deploy script `infra/scripts/create-sql-mi-users.sql` for MI database users.
@@ -28,6 +31,8 @@ and this project adheres to [Conventional Commits](https://www.conventionalcommi
 
 ### Changed
 
+- ADR 0009: Azure subscription deploy deferred (cost); stack remains deploy-ready.
+- Worker container uses `aspnet:10.0` and registers routing for shared Identity DI on the generic host.
 - Getting started: full compose stack on port 8088; requires Docker Linux containers.
 - API CORS allows `http://localhost:8088`; optional `DisableHttpsRedirection` for container HTTP.
 - docker-compose image tags pinned (no `:latest`); API runtime image no longer installs curl (TCP health probe).

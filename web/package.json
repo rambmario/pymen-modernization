@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
-    "screenshots": "tsx scripts/screenshots.ts"
+    "screenshots": "tsx scripts/screenshots.ts",
+    "demo:gif": "tsx scripts/demo-gif.ts"
   },
   "private": true,
   "packageManager": "npm@11.12.1",

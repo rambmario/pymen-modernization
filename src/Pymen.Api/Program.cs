@@ -5,6 +5,7 @@ using Pymen.Api.Endpoints;
 using Pymen.Api.Middleware;
 using Pymen.Application;
 using Pymen.Infrastructure;
+using Pymen.Infrastructure.Observability;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Infrastructure.Persistence.Seed;
 using Scalar.AspNetCore;
@@ -16,6 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddPymenOpenTelemetry(
+    builder.Configuration,
+    builder.Environment,
+    serviceName: "Pymen.Api",
+    instrumentAspNetCore: true);
 builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();

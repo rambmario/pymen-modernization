@@ -72,7 +72,7 @@ param tags object = {}
 var apiSqlConnectionString = 'Server=tcp:${sqlFullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;User Id=${apiManagedIdentityClientId};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 var workerSqlConnectionString = 'Server=tcp:${sqlFullyQualifiedDomainName},1433;Initial Catalog=${sqlDatabaseName};Authentication=Active Directory Managed Identity;User Id=${workerManagedIdentityClientId};Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
-resource managedEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
+resource managedEnv 'Microsoft.App/managedEnvironments@2025-07-01' = {
   name: environmentName
   location: location
   tags: tags
@@ -87,7 +87,7 @@ resource managedEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-resource api 'Microsoft.App/containerApps@2024-03-01' = {
+resource api 'Microsoft.App/containerApps@2025-07-01' = {
   name: apiAppName
   location: location
   tags: tags
@@ -202,7 +202,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
-resource worker 'Microsoft.App/containerApps@2024-03-01' = {
+resource worker 'Microsoft.App/containerApps@2025-07-01' = {
   name: workerAppName
   location: location
   tags: tags

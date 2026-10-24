@@ -170,6 +170,35 @@ Captured against the local Dev stack (`docker compose up -d`, API + SPA). Regene
 | Work-order list | ![Work-order list](docs/images/work-order-list.png) |
 | Work-order detail | ![Work-order detail](docs/images/work-order-detail.png) |
 
+### Async remito demo (local)
+
+![Deliver OT → worker PDF → download remito](docs/images/demo-remito.gif)
+
+Regenerate: `docker compose up -d --build` then `cd web && npm run demo:gif` (Playwright records the UI; ffmpeg or Docker `jrottenberg/ffmpeg` converts to GIF).
+
+---
+
+## Cloud-ready (Azure deferred)
+
+Phase 2 is **deploy-ready** without a live Azure subscription (cost). IaC, OIDC workflow, and observability are in the repo; nothing is provisioned until you opt in.
+
+| What would deploy | Detail |
+|-------------------|--------|
+| Container Apps | API + worker (Consumption, scale-to-zero) |
+| Static Web Apps | Angular SPA (Free) |
+| Azure SQL | Serverless + auto-pause, Entra-only |
+| Service Bus | Basic queue `domain-events` (Outbox → PDF) |
+| Blob + Key Vault + App Insights | Remito PDFs, JWT secret, traces |
+| Budget alert | Soft monthly cap (e.g. ~USD 30) |
+
+- Architecture: [ADR 0009](docs/adr/0009-arquitectura-cloud-azure.md) (deferred deploy), [ADR 0010](docs/adr/0010-mensajeria-async-outbox.md), [architecture-cloud.md](docs/architecture-cloud.md)
+- Bicep: [`infra/`](infra/) — validated in CI (`az bicep build` + linter)
+- Manual checklist / OIDC activation: [docs/azure-setup.md](docs/azure-setup.md)
+- Deploy workflow: [`.github/workflows/deploy-azure.yml`](.github/workflows/deploy-azure.yml) (`workflow_dispatch` only; **skips** if `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID` are unset)
+- **Estimated demo cost:** ~USD 0–25 / month when idle-friendly (see ADR 0009). No public URL until a subscription is configured.
+
+Local observability: OpenTelemetry → OTLP collector in compose (or console). Azure: same SDK → Application Insights when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set.
+
 ---
 
 ## AI-assisted development
@@ -183,7 +212,7 @@ This portfolio was built with **Cursor** under project rules (`.cursor/rules`, `
 | Phase | Focus |
 |-------|--------|
 | **1** (done) | Foundation: Clean Architecture, EF Core, tenancy, Identity/JWT, Angular OT UI, CI |
-| **2** | Azure Service Bus (async stock/PDF jobs), QuestPDF for OT report, Azure deploy |
+| **2** (cloud-ready) | Outbox + Service Bus + QuestPDF remito; Bicep/OIDC deploy-ready (Azure deferred); OpenTelemetry |
 | **3** | Commercial basics (extended delivery/invoice views, pricing, pending-delivery queries) |
 
 ---

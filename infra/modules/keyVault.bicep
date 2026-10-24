@@ -17,7 +17,7 @@ param jwtSigningKey string
 @description('Resource tags.')
 param tags object = {}
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
   name: name
   location: location
   tags: tags
@@ -60,7 +60,7 @@ resource deployerSecretsOfficer 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-resource jwtSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+resource jwtSecret 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
   parent: keyVault
   name: 'JwtSigningKey'
   properties: {

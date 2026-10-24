@@ -98,3 +98,27 @@ jobs:
 
       - name: Build (production)
         run: npm run build
+
+  infra:
+    name: Infrastructure (Bicep)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Bicep
+        run: az bicep install
+
+      - name: Lint (fail on Error or Warning)
+        working-directory: infra
+        run: |
+          set -euo pipefail
+          az bicep lint --file main.bicep 2>&1 | tee /tmp/bicep-lint.txt
+          if grep -E ': (Error|Warning) ' /tmp/bicep-lint.txt; then
+            echo "::error::Bicep linter reported Error or Warning diagnostics"
+            exit 1
+          fi
+
+      - name: Build
+        working-directory: infra
+        run: az bicep build --file main.bicep

@@ -173,10 +173,62 @@ az consumption budget delete --budget-name budget-pymen-demo
 
 ---
 
-## Qué no hace este paso
+## Estado actual (despliegue diferido)
+
+Por costo, **no hay suscripción Azure activa** en el portfolio por ahora (ADR 0009). El IaC y el workflow están **deploy-ready**:
+
+- CI job **Infrastructure (Bicep)** valida `infra/main.bicep` en cada push/PR (sin cuenta Azure).
+- Workflow [`.github/workflows/deploy-azure.yml`](../.github/workflows/deploy-azure.yml): solo `workflow_dispatch`; si faltan variables OIDC, el job **gate** publica un notice y **no despliega**.
+
+---
+
+## Activar deploy OIDC cuando exista suscripción
+
+### 1. App registration + federated credential
+
+1. En Entra ID: App registration (ej. `pymen-github-deploy`).
+2. **Certificates & secrets → Federated credentials → GitHub Actions**:
+   - Organization: `rambmario` (o tu org/user)
+   - Repository: `pymen-modernization`
+   - Entity: `Branch` → `main` (o Environment `azure-demo` si preferís)
+3. Anotá **Application (client) ID** y **Directory (tenant) ID**.
+4. En la suscripción: rol **Contributor** (+ **User Access Administrator** si el Bicep crea role assignments) sobre el SP de esa app.
+
+### 2. Variables y secretos del repo GitHub
+
+**Settings → Secrets and variables → Actions**
+
+| Tipo | Nombre | Valor |
+|------|--------|--------|
+| Variable | `AZURE_CLIENT_ID` | Client ID de la app |
+| Variable | `AZURE_TENANT_ID` | Tenant ID |
+| Variable | `AZURE_SUBSCRIPTION_ID` | Subscription ID |
+| Variable | `AZURE_SQL_ENTRA_ADMIN_LOGIN` | Tu UPN (admin SQL Entra) |
+| Variable | `AZURE_SQL_ENTRA_ADMIN_OBJECT_ID` | Tu object id |
+| Variable | `AZURE_BUDGET_CONTACT_EMAIL` | Email de alertas de budget |
+| Secret | `AZURE_JWT_SIGNING_KEY` | Clave JWT (≥32 chars) |
+
+Sin las tres primeras variables, Actions → **Deploy Azure** se puede disparar pero **sale en skip** (esperado hasta configurar).
+
+### 3. Disparar el deploy
+
+Actions → **Deploy Azure** → Run workflow (`environmentName=demo`). El workflow:
+
+1. Login OIDC (`azure/login`)
+2. Build/push imágenes API y worker a GHCR
+3. `az deployment sub create` con `infra/main.bicep`
+
+Después: pasos 6–7 de este doc (usuarios SQL MI, migraciones, SWA).
+
+### 4. Observabilidad en Azure
+
+ACA ya recibe `APPLICATIONINSIGHTS_CONNECTION_STRING` desde Bicep. La API/worker exportan OpenTelemetry a Application Insights cuando esa variable está presente (localmente usan OTLP → collector en compose, o consola).
+
+---
+
+## Qué no hace la IA
 
 - No hay `az login` ni deploy ejecutado por la IA.
-- No hay OIDC de GitHub Actions (**Paso 5** — pendiente).
-- No hay URL de demo estable hasta imágenes reales + usuarios SQL MI + migraciones + SWA deploy.
+- No hay URL pública mientras no haya suscripción + workflow configurado.
 
-Cuando la suscripción esté lista y hayas hecho login, avisá y seguimos con el deploy o con el Paso 5 (CI/CD).
+Cuando la suscripción esté lista, configurá las variables de la tabla y corré **Deploy Azure** a mano.

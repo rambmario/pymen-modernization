@@ -18,7 +18,8 @@ COPY src/Pymen.Worker/ src/Pymen.Worker/
 
 RUN dotnet publish src/Pymen.Worker/Pymen.Worker.csproj -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
+# aspnet shared framework: Infrastructure references Microsoft.AspNetCore.App (Identity/JWT helpers, OTEL AspNetCore pkgs).
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .

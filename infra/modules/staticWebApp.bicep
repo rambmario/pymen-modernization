@@ -7,7 +7,7 @@ param name string
 @description('Resource tags.')
 param tags object = {}
 
-resource swa 'Microsoft.Web/staticSites@2023-12-01' = {
+resource swa 'Microsoft.Web/staticSites@2025-03-01' = {
   name: name
   location: location
   tags: tags

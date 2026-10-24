@@ -27,7 +27,7 @@ param autoPauseDelayMinutes int = 60
 @description('Resource tags.')
 param tags object = {}
 
-resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
+resource sqlServer 'Microsoft.Sql/servers@2025-01-01' = {
   name: serverName
   location: location
   tags: tags
@@ -46,7 +46,7 @@ resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' = {
   }
 }
 
-resource firewallAzureServices 'Microsoft.Sql/servers/firewallRules@2023-08-01-preview' = {
+resource firewallAzureServices 'Microsoft.Sql/servers/firewallRules@2025-01-01' = {
   parent: sqlServer
   name: 'AllowAzureServices'
   properties: {
@@ -55,7 +55,7 @@ resource firewallAzureServices 'Microsoft.Sql/servers/firewallRules@2023-08-01-p
   }
 }
 
-resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+resource database 'Microsoft.Sql/servers/databases@2025-01-01' = {
   parent: sqlServer
   name: databaseName
   location: location

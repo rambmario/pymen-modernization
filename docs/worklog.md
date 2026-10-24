@@ -763,3 +763,38 @@ Ajustar Paso 4: SQL solo Entra, sin `listKeys`/connection strings para SB/Storag
 ### Próximo paso
 
 **Frenar Paso 5.** Mario: suscripción + `az login` + checklist azure-setup (usuarios SQL MI) cuando quiera demo.
+
+---
+
+## 2026-10-24 — Cambio de plan: Azure diferido; Pasos 5–7 en local/cloud-ready
+
+**Hora (aprox.):** 12:49–13:05 (UTC-3, America/Buenos_Aires)
+
+### Objetivo
+
+Sin suscripción Azure por ahora. Paso 4 queda deploy-ready. Completar: CI Bicep, workflow deploy OIDC (manual + skip), OpenTelemetry (Paso 6), README Cloud-ready + GIF demo local (Paso 7). Registrar en ADR 0009.
+
+### Qué se hizo
+
+- ADR 0009: sección **Despliegue diferido** (costo).
+- CI: job `Infrastructure (Bicep)` — `az bicep lint` (Error|Warning → fail) + `az bicep build`; `infra/bicepconfig.json`; API versions actualizadas.
+- `.github/workflows/deploy-azure.yml`: solo `workflow_dispatch` + OIDC; job `gate` salta si faltan `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`.
+- `docs/azure-setup.md`: activación OIDC + variables/secretos.
+- OpenTelemetry (`AddPymenOpenTelemetry`): App Insights → OTLP → consola; collector en compose (`otel-collector`).
+- Worker: imagen `aspnet:10.0` + `AddRouting` + `FrameworkReference` (Identity en host genérico).
+- README **Cloud-ready** + `docs/images/demo-remito.gif` (`npm run demo:gif`).
+
+### Decisiones
+
+- No provisionar Azure hasta suscripción (costo).
+- Deploy workflow no-op sin variables de repo.
+- Demo vía GIF local en lugar de URL pública.
+
+### Problemas
+
+- CS0433 Azure.Identity vs Azure.Core → Identity 1.21 + Core 1.60.
+- Worker sin AspNetCore shared framework / AuthorizationPolicyCache → Dockerfile aspnet + `AddRouting`.
+
+### Próximo paso
+
+OK humano. Suscripción futura → azure-setup + **Deploy Azure** manual.

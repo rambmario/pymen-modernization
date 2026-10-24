@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
 using Pymen.Infrastructure;
+using Pymen.Infrastructure.Observability;
 using Pymen.Infrastructure.Persistence;
 using Pymen.Worker;
 
@@ -8,7 +9,14 @@ DotEnv.LoadFromAncestorDirectory(AppContext.BaseDirectory);
 
 var builder = Host.CreateApplicationBuilder(args);
 
+// Infrastructure registers ASP.NET Identity (shared with API); routing satisfies AuthorizationPolicyCache on generic host.
+builder.Services.AddRouting();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddPymenOpenTelemetry(
+    builder.Configuration,
+    builder.Environment,
+    serviceName: "Pymen.Worker",
+    instrumentAspNetCore: false);
 
 if (!builder.Services.Any(d => d.ServiceType == typeof(ServiceBusClient)))
 {

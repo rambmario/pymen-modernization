@@ -16,7 +16,7 @@ param workerPrincipalId string
 @description('Resource tags.')
 param tags object = {}
 
-resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: name
   location: location
   tags: tags
@@ -33,7 +33,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
-resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   parent: storage
   name: 'default'
   properties: {
@@ -44,7 +44,7 @@ resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01
   }
 }
 
-resource deliveryNotes 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+resource deliveryNotes 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
   parent: blobServices
   name: deliveryNotesContainerName
   properties: {

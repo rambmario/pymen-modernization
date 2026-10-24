@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Shared Infrastructure registers Identity; AspNetCore shared framework required at runtime. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup>

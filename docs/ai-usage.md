@@ -420,6 +420,26 @@ Agregar conteo exacto de tests al worklog del Paso 3; seguir con Paso 4 (Bicep).
 
 ---
 
+## 2026-10-24 — Azure diferido + Pasos 5–7 cloud-ready
+
+### Pedido principal
+
+Sin suscripción: CI Bicep; deploy OIDC manual con skip; OpenTelemetry; README Cloud-ready + GIF demo local; registrar en ADR 0009.
+
+### Qué generó la IA
+
+- Job CI Bicep + `deploy-azure.yml` + azure-setup OIDC; OTEL + collector compose; worker fix aspnet/routing; GIF Playwright; docs/README/ADR.
+
+### Qué revisó o corrigió el desarrollador
+
+- Pendiente OK humano.
+
+### Tiempo estimado ahorrado
+
+~3–4 h.
+
+---
+
 ## 2026-10-24 — Paso 4 ajuste Entra-only / MI
 
 ### Pedido principal

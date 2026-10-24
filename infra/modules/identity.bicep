@@ -7,12 +7,12 @@ param apiName string
 @description('Name of the worker managed identity.')
 param workerName string
 
-resource apiIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource apiIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
   name: apiName
   location: location
 }
 
-resource workerIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource workerIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
   name: workerName
   location: location
 }

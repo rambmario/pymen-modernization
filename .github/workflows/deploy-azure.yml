@@ -1,0 +1,152 @@
+# Deploy Pymen to Azure (OIDC). Manual only.
+# Skips when repository variables AZURE_CLIENT_ID / AZURE_TENANT_ID / AZURE_SUBSCRIPTION_ID are missing.
+# Activation steps: docs/azure-setup.md
+
+name: Deploy Azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environmentName:
+        description: Environment name used in Bicep (resource naming)
+        required: true
+        default: demo
+        type: string
+      apiImage:
+        description: Full API container image (e.g. ghcr.io/org/pymen-api:sha)
+        required: false
+        default: ""
+        type: string
+      workerImage:
+        description: Full worker container image
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-azure-${{ github.event.inputs.environmentName }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Check Azure OIDC config
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Require repository variables
+        id: check
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${AZURE_CLIENT_ID}" ] && missing+=("AZURE_CLIENT_ID")
+          [ -z "${AZURE_TENANT_ID}" ] && missing+=("AZURE_TENANT_ID")
+          [ -z "${AZURE_SUBSCRIPTION_ID}" ] && missing+=("AZURE_SUBSCRIPTION_ID")
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Azure deploy — missing repository variables: ${missing[*]}. See docs/azure-setup.md (OIDC)."
+            exit 0
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          echo "Azure OIDC variables present; deploy will run."
+
+  deploy:
+    name: Build images + Bicep deploy
+    needs: gate
+    if: needs.gate.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT_NAME: ${{ github.event.inputs.environmentName }}
+      IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Lowercase image owner
+        id: meta
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          sha="${{ github.sha }}"
+          echo "owner=${owner}" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ github.event.inputs.apiImage }}" ]; then
+            echo "api_image=${{ github.event.inputs.apiImage }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "api_image=ghcr.io/${owner}/pymen-api:${sha}" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "${{ github.event.inputs.workerImage }}" ]; then
+            echo "worker_image=${{ github.event.inputs.workerImage }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "worker_image=ghcr.io/${owner}/pymen-worker:${sha}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        if: ${{ github.event.inputs.apiImage == '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Pymen.Api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.api_image }}
+
+      - name: Build and push Worker image
+        if: ${{ github.event.inputs.workerImage == '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Pymen.Worker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.worker_image }}
+
+      - name: Install Bicep
+        run: az bicep install
+
+      - name: Deploy Bicep (subscription scope)
+        env:
+          JWT_SIGNING_KEY: ${{ secrets.AZURE_JWT_SIGNING_KEY }}
+          SQL_ENTRA_ADMIN_LOGIN: ${{ vars.AZURE_SQL_ENTRA_ADMIN_LOGIN }}
+          SQL_ENTRA_ADMIN_OBJECT_ID: ${{ vars.AZURE_SQL_ENTRA_ADMIN_OBJECT_ID }}
+          BUDGET_CONTACT_EMAIL: ${{ vars.AZURE_BUDGET_CONTACT_EMAIL }}
+        run: |
+          set -euo pipefail
+          : "${JWT_SIGNING_KEY:?Set secret AZURE_JWT_SIGNING_KEY}"
+          : "${SQL_ENTRA_ADMIN_LOGIN:?Set variable AZURE_SQL_ENTRA_ADMIN_LOGIN}"
+          : "${SQL_ENTRA_ADMIN_OBJECT_ID:?Set variable AZURE_SQL_ENTRA_ADMIN_OBJECT_ID}"
+          : "${BUDGET_CONTACT_EMAIL:?Set variable AZURE_BUDGET_CONTACT_EMAIL}"
+          az deployment sub create \
+            --name "pymen-${ENVIRONMENT_NAME}-${GITHUB_SHA::7}" \
+            --location eastus \
+            --template-file infra/main.bicep \
+            --parameters infra/main.bicepparam \
+            --parameters environmentName="${ENVIRONMENT_NAME}" \
+            --parameters sqlEntraAdminLogin="${SQL_ENTRA_ADMIN_LOGIN}" \
+            --parameters sqlEntraAdminObjectId="${SQL_ENTRA_ADMIN_OBJECT_ID}" \
+            --parameters jwtSigningKey="${JWT_SIGNING_KEY}" \
+            --parameters budgetContactEmail="${BUDGET_CONTACT_EMAIL}" \
+            --parameters apiImage="${{ steps.meta.outputs.api_image }}" \
+            --parameters workerImage="${{ steps.meta.outputs.worker_image }}"

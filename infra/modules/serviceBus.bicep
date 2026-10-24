@@ -16,7 +16,7 @@ param workerPrincipalId string
 @description('Resource tags.')
 param tags object = {}
 
-resource namespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
+resource namespace 'Microsoft.ServiceBus/namespaces@2026-01-01' = {
   name: namespaceName
   location: location
   tags: tags
@@ -31,7 +31,7 @@ resource namespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   }
 }
 
-resource queue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
+resource queue 'Microsoft.ServiceBus/namespaces/queues@2026-01-01' = {
   parent: namespace
   name: queueName
   properties: {

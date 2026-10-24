@@ -48,6 +48,18 @@ services:
     networks:
       - pymen
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.114.0
+    container_name: pymen-otel
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./docker/otel/config.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - pymen
+
   servicebus-emulator:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:2.0.1
     container_name: pymen-servicebus
@@ -87,6 +99,8 @@ services:
       ServiceBus__ConnectionString: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
       ServiceBus__QueueName: domain-events
       AzureStorage__ConnectionString: "${AZURITE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: Pymen.Api
     ports:
       - "5207:8080"
     depends_on:
@@ -96,6 +110,8 @@ services:
         condition: service_started
       azurite:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     healthcheck:
       # No curl/wget in the API image; TCP probe is enough for local compose liveness.
       test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
@@ -119,6 +135,8 @@ services:
       ServiceBus__ConnectionString: "${SERVICEBUS_CONNECTION_STRING:-Endpoint=sb://servicebus-emulator;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;}"
       ServiceBus__QueueName: domain-events
       AzureStorage__ConnectionString: "${AZURITE_CONNECTION_STRING:-DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_SERVICE_NAME: Pymen.Worker
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -126,6 +144,8 @@ services:
         condition: service_started
       azurite:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
       api:
         condition: service_healthy
     healthcheck:

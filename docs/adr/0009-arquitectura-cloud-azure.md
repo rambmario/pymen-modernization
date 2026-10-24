@@ -1,6 +1,6 @@
 # ADR 0009 — Arquitectura cloud en Azure (mínimo costo)
 
-**Estado:** Aceptado (actualizado 2026-10-24)  
+**Estado:** Aceptado (actualizado 2026-10-24 — despliegue diferido)  
 **Fecha:** 2026-10-22  
 **Decisores:** Mario
 
@@ -12,9 +12,20 @@ Fase 2 (Cloud & Async): hace falta una URL pública de demo, procesamiento asín
 
 Diagrama objetivo: `docs/architecture-cloud.md`.
 
+### Despliegue diferido (2026-10-24)
+
+Por **costo de suscripción Azure**, el provisionamiento real queda **aplazado**. La Fase 2 entrega el stack **deploy-ready**:
+
+- Bicep en `/infra` + checklist en `docs/azure-setup.md` (Paso 4).
+- CI valida Bicep (`az bicep build` + linter) sin cuenta Azure.
+- Workflow de deploy OIDC solo `workflow_dispatch`, y se **salta** si no hay `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`.
+- Demo del flujo async con stack **local** (compose + GIF Playwright); sin URL pública por ahora.
+
+Cuando exista suscripción, activar según `docs/azure-setup.md` (OIDC + deploy manual).
+
 ## Decisión
 
-Desplegar Pymen en Azure con estos recursos:
+Diseño objetivo (cuando se active la suscripción): desplegar Pymen en Azure con estos recursos:
 
 | Recurso | Rol | Tier / configuración |
 |---------|-----|----------------------|
@@ -79,7 +90,8 @@ Precios públicos varían por región y oferta; cifras orientativas para **poca 
 
 ## Consecuencias
 
-- Demo pública viable con gasto controlado; Mario debe crear suscripción, login y permisos (ver `docs/azure-setup.md`) — la IA no provisiona ni paga.
+- **Hoy:** portfolio cloud-ready sin gasto Azure; demo local + GIF; IaC y workflow listos pero inactivos hasta configurar variables OIDC.
+- **Cuando haya suscripción:** demo pública viable con gasto controlado; Mario crea suscripción, login, federated credential y variables (ver `docs/azure-setup.md`) — la IA no provisiona ni paga.
 - Cold starts: SQL serverless y ACA scale-to-zero implican latencia al primer hit tras idle.
 - Entra-only SQL exige un paso humano post-deploy (usuarios MI + firewall + migraciones con tu identidad Entra).
 - Managed Identity + RBAC fino (Sender/Receiver, Reader/Contributor) evita secretos de plataforma en Key Vault.

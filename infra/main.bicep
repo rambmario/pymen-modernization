@@ -54,7 +54,7 @@ var namePrefix = 'pymen-${environmentName}'
 var rgName = 'rg-${namePrefix}'
 var kvDeployerObjectId = empty(deployerObjectId) ? sqlEntraAdminObjectId : deployerObjectId
 
-resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: rgName
   location: location
   tags: tags
