@@ -34,7 +34,7 @@
     <!-- Tests (shared versions → one Dependabot PR instead of per-project) -->
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="FluentAssertions" Version="8.11.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.2" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.5.85" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
